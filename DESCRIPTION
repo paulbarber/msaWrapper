@@ -1,0 +1,27 @@
+Package: msaWrapper
+Title: Multivariate Survival Analysis
+Version: 0.1.1.1
+Authors@R: 
+    person("Paul", "Barber", email = "paul.barber@kcl.ac.uk", 
+            role = c("aut", "cre"),
+           comment = c(ORCID = "0000-0002-8595-1141"))
+Description: This package unifies the exploration and use of multivariate survival analysis methods for time to event and ordinal class data.
+License: GPL (>=2)
+Encoding: UTF-8
+Imports:
+    ggplot2,
+    reshape2,
+    survival,
+    survminer
+Suggests:
+    knitr,
+    devtools,
+    roxygen2,
+    usethis,
+    rmarkdown
+RoxygenNote: 7.1.2
+Roxygen: list(markdown = TRUE)
+Config/testthat/edition: 3
+Depends: 
+    R (>= 2.10)
+VignetteBuilder: knitr
