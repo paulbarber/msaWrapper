@@ -8,11 +8,11 @@
 #' @export
 plotDataCorrelations <- function(msa,
                                  method = c("kendall", "pearson", "spearman"),
-                                 textSize = 5, groups = NA){
+                                 textSize = 5, groups = vector()){
 
   method <- match.arg(method)
 
-  if(!is.na(groups)){
+  if(length(groups)>0){
     data <- msa$data[, msa$group %in% groups]
   } else {
     data <- msa$data
@@ -20,7 +20,7 @@ plotDataCorrelations <- function(msa,
 
   cormat <- cor(data, method = method, use = "pairwise.complete.obs")
   melted_cormat <- reshape2::melt(cormat)
-  ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+  ggplot(data = melted_cormat, aes_string("Var2", "Var1", fill = "value"))+
     geom_tile()+
     scale_fill_gradient2(low = "blue", high = "red", mid = "white",
                          midpoint = 0, limit = c(-1,1), space = "Lab",
@@ -47,10 +47,10 @@ plotDataCorrelations <- function(msa,
 #' @export
 strongDataCorrelations <- function(msa, threshold = 0.95,
                                    method = c("kendall", "pearson", "spearman"),
-                                   groups = NA){
+                                   groups = vector()){
   method <- match.arg(method)
 
-  if(!is.na(groups)){
+  if(length(groups)>0){
     data <- msa$data[, msa$group %in% groups]
   } else {
     data <- msa$data
@@ -68,6 +68,7 @@ strongDataCorrelations <- function(msa, threshold = 0.95,
 #' Plot strong correlations in the covars in data frame s.
 #' @param msa The msaWrapper object to work with.
 #' @param s A data frame with at least 2 cols that have pairs of covar names to plot. like that produced by strongDataCorrelations()
+#' @param method Correlation method to use.
 #' @param trans Any of scale_continuous, incl. "log10", "log2" etc.
 #'
 #' @export
@@ -112,7 +113,7 @@ plotDataCrossCorrelations <- function(msa,
 
   cormat <- cor(X, Y, method = method, use = "pairwise.complete.obs")
   melted_cormat <- reshape2::melt(cormat)
-  ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+  ggplot(data = melted_cormat, aes_string("Var2", "Var1", fill = "value"))+
     geom_tile()+
     scale_fill_gradient2(low = "blue", high = "red", mid = "white",
                          midpoint = 0, limit = c(-1,1), space = "Lab",

@@ -8,7 +8,7 @@ plotDataCorrelations(
   msa,
   method = c("kendall", "pearson", "spearman"),
   textSize = 5,
-  groups = NA
+  groups = vector()
 )
 }
 \arguments{

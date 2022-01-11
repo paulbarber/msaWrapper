@@ -16,6 +16,8 @@ plotStrongCorrelations(
 
 \item{s}{A data frame with at least 2 cols that have pairs of covar names to plot. like that produced by strongDataCorrelations()}
 
+\item{method}{Correlation method to use.}
+
 \item{trans}{Any of scale_continuous, incl. "log10", "log2" etc.}
 }
 \description{

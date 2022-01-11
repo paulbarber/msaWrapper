@@ -6,6 +6,9 @@
 \usage{
 plotOutcome(msa)
 }
+\arguments{
+\item{msa}{The msaWrapper object to work with.}
+}
 \description{
 Generic function.
 }

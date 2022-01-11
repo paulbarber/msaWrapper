@@ -4,7 +4,10 @@
 \alias{plotOutcomeByClass}
 \title{plotOutcomeByClass}
 \usage{
-plotOutcomeByClass(msa, ...)
+plotOutcomeByClass(msa, classVector, strataName)
+}
+\arguments{
+\item{msa}{The msaWrapper object to work with.}
 }
 \description{
 Generic function.

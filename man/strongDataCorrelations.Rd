@@ -8,7 +8,7 @@ strongDataCorrelations(
   msa,
   threshold = 0.95,
   method = c("kendall", "pearson", "spearman"),
-  groups = NA
+  groups = vector()
 )
 }
 \arguments{

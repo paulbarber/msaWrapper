@@ -1,6 +1,7 @@
 #' plotOutcome
 #'
 #' Generic function.
+#' @param msa The msaWrapper object to work with.
 #' @export
 plotOutcome <- function(msa) UseMethod("plotOutcome")
 
@@ -15,7 +16,7 @@ plotOutcome.msaWrapperOclass <- function(msa){
   data <- data.frame(msa$outcome)
   names(data) <- "outcome"
 
-  ggplot(data, aes(outcome)) +
+  ggplot(data, aes_string("outcome")) +
     geom_histogram(stat = "count")
 
 }
@@ -43,8 +44,9 @@ plotOutcome.msaWrapperTte <- function(msa){
 #' plotOutcomeByClass
 #'
 #' Generic function.
+#' @param msa The msaWrapper object to work with.
 #' @export
-plotOutcomeByClass <- function(msa, ...) UseMethod("plotOutcomeByClass")
+plotOutcomeByClass <- function(msa, classVector, strataName) UseMethod("plotOutcomeByClass")
 
 #' plotOutcomeByClass.msaWrapperOclass
 #'
