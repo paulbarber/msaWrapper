@@ -90,6 +90,12 @@ c <- as.factor(ifelse(msa$data$Sex, "female", "male"))  # this may not be right 
 plotOutcomeByClass(msa, c, "Sex")
 ```
 
+# Plot outcome correlations
+
+```{r}
+plotOutcomeCorrelations(msa, groups = c(2,4,5,6))
+```
+
 ```{r}
 sessionInfo()
 ```
