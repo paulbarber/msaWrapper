@@ -10,13 +10,16 @@ reduceByCorrelationWithinGroups <- function(msa,
                                             method = c("kendall", "pearson", "spearman"),
                                             threshold = 0.6){
 
-  if(dim(msa$outcomeCorrelations)[1] < 1) stop()
-
   method <- match.arg(method)
+
+  msa <- generateOutcomeCorrelations(msa, method)
 
   cor_data <- msa$outcomeCorrelations
   group <- msa$group
   group_names <- msa$groupLabels
+
+  # get data correlations
+  cormat <- cor(msa$data, method = method, use = "pairwise.complete.obs")
 
   # order the table
   outcome_cor <- cor_data[order(abs(cor_data$correlation), decreasing = T),]
@@ -26,7 +29,7 @@ reduceByCorrelationWithinGroups <- function(msa,
 
   for(i in 1:length(outcome_cor$covars)){
     var_name <- outcome_cor$covars[i]
-    g = group[var_name == names(data)]
+    g = group[var_name == names(msa$data)]
 
     cat(paste("Check:", i, var_name, group_names[g], "\n"))
 
@@ -61,11 +64,13 @@ reduceByCorrelationWithinGroups <- function(msa,
       cat(paste(" Discarding", vstrong_cors, signif(vstrong_vals, 3), "\n"))
   }
 
-  # Form new dataset object as copy of the old
-  new_msa <- msa
+  # reduce the data
+  new_data <- msa$data[, keep]
+  new_group <- msa$group[keep]
+  new_groupLabels <- msa$groupLabels
 
-  # reduce the data in it
-  new_msa$data <- msa$data[, keep]
+  new_msa <- msaWrapperCreate(new_data, msa$outcome,
+                              group = new_group, groupLabels = new_groupLabels)
 
   return(new_msa)
 }

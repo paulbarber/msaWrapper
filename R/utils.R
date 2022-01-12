@@ -34,6 +34,7 @@ msaWrapperCreate <- function(data, outcome, rowsLabelled = F,
   if(is.na(group)) group <- rep(1, dim(data)[2])
   if(is.na(groupLabels)) groupLabels <- c("All")
 
+  names(group) <- names(data)
   colLabels <- names(data)
 
   outcomeCorrelations <- data.frame(covars=character(),

@@ -97,6 +97,12 @@ msa <- generateOutcomeCorrelations(msa, method = "kendall")
 plotOutcomeCorrelations(msa, groups = c(2,4,5,6))
 ```
 
+# Data Reduction
+
+```{r}
+reduced_msa <- reduceByCorrelationWithinGroups(msa, threshold = 0.6)
+```
+
 ```{r}
 sessionInfo()
 ```
