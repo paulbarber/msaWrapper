@@ -51,3 +51,44 @@ msaWrapperCreate <- function(data, outcome, rowsLabelled = F,
             class = thisClass)
 
 }
+
+#' print.msaWrapperTte
+#'
+#' This function print info about a msaWrapper object.
+#' This is the generic for msaWrapper.
+#' See overloaded print functions that are exported below.
+#' @param msa The msaWrapper object
+msaWrapperPrint <- function(msa){
+  print(msa$type)
+  print(paste("data rows (samples):", dim(msa$data)[1]))
+  print(paste("data cols (covariates):", dim(msa$data)[2]))
+  t <- table(msa$group)
+  names(t) <- msa$groupLabels
+  print(t)
+}
+
+#' print.msaWrapperTte
+#'
+#' This function print info about a msaWrapperTte object
+#' @param msa The msaWrapper object
+#' @export
+print.msaWrapperTte <- function(msa, ...){
+  msaWrapperPrint(msa, ...)
+  t <- table(msa$outcome$event)
+  print("Outcome:")
+  names(t) <- c("censored", "events")
+  print(t)
+}
+
+#' print.msaWrapperOclass
+#'
+#' This function print info about a msaWrapperOClass object
+#' @param msa The msaWrapper object
+#' @export
+print.msaWrapperOclass <- function(msa, ...){
+  msaWrapperPrint(msa, ...)
+  t <- table(msa$outcome)
+  print("Outcome:")
+  print(t)
+}
+
