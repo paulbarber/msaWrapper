@@ -18,7 +18,7 @@ generateOutcomeCorrelations <- function(msa, method = c("kendall", "pearson", "s
   if(class(msa) == "msaWrapperTte"){
     outcome <- ifelse(msa$outcome$event, msa$outcome$time, NA)
   } else {
-    outcome <- msa$outcome
+    outcome <- as.numeric(msa$outcome)
   }
 
   all_data <- msa$data

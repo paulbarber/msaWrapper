@@ -88,6 +88,26 @@ plotDataCrossCorrelations(msa,  method = "pearson", textSize = 5,
 plotOutcome(msa)
 ```
 
+# Plot outcome correlations
+
+```{r}
+msa <- generateOutcomeCorrelations(msa, method = "kendall")
+plotOutcomeCorrelations(msa, groups = c(2,4,5,6))
+```
+
+# Data Reduction
+
+```{r}
+reduced_msa <- reduceByCorrelationWithinGroups(msa, threshold = 0.6)
+```
+
+# Build Random Survival Forest
+
+```{r, eval=FALSE}
+# this will take some time
+RSF <- buildRandomForest(reduced_msa, iterations = 10)
+```
+
 ```{r}
 c <- as.factor(ifelse(msa$data$Sex, "female", "male"))  # this may not be right way around.
 plotOutcomeByClass(msa, c, "Sex")

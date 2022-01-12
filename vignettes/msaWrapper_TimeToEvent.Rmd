@@ -103,6 +103,13 @@ plotOutcomeCorrelations(msa, groups = c(2,4,5,6))
 reduced_msa <- reduceByCorrelationWithinGroups(msa, threshold = 0.6)
 ```
 
+# Build Random Survival Forest
+
+```{r, eval=FALSE}
+# this will take some time
+RSF <- buildRandomForest(reduced_msa, iterations = 10)
+```
+
 ```{r}
 sessionInfo()
 ```
