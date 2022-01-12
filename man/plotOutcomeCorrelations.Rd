@@ -4,17 +4,10 @@
 \alias{plotOutcomeCorrelations}
 \title{plotOutcomeCorrelations}
 \usage{
-plotOutcomeCorrelations(
-  msa,
-  method = c("kendall", "pearson", "spearman"),
-  textSize = 3,
-  groups = vector()
-)
+plotOutcomeCorrelations(msa, textSize = 3, groups = vector())
 }
 \arguments{
 \item{msa}{The msaWrapper object to work with.}
-
-\item{method}{Correlation method to use.}
 
 \item{textSize}{Data labels text size.}
 
@@ -22,6 +15,6 @@ plotOutcomeCorrelations(
 }
 \description{
 This function plots a volcano plot all covars against outcome.
-Usually use kendall rank correlation for tte and ordinal class.
-For tte data, use only the events, ignoring censored data.
+Must use generateOutcomeCorrelations first.
+The values and method use are determined by generateOutcomeCorrelations.
 }

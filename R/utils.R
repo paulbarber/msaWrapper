@@ -28,15 +28,25 @@ msaWrapperCreate <- function(data, outcome, rowsLabelled = F,
     rowLabels <- data[,1]
     data <- data[,-1]
   } else {
-    rowLabels <- NA
+    rowLabels <- vector()
   }
+
+  if(is.na(group)) group <- rep(1, dim(data)[2])
+  if(is.na(groupLabels)) groupLabels <- c("All")
 
   colLabels <- names(data)
 
+  outcomeCorrelations <- data.frame(covars=character(),
+                                    correlation=double(),
+                                    logpval=double())
+
   # return this structure with the correct class
-  structure(list(type, data, rowLabels, colLabels, group, groupLabels, outcome),
+  structure(list(type, data, rowLabels, colLabels,
+                 group, groupLabels,
+                 outcome, outcomeCorrelations),
             .Names = c("type", "data", "rowLabels", "colLabels",
-                       "group", "groupLabels", "outcome"),
+                       "group", "groupLabels",
+                       "outcome", "outcomeCorrelations"),
             class = thisClass)
 
 }

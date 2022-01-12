@@ -93,6 +93,7 @@ plotOutcomeByClass(msa, c, "Sex")
 # Plot outcome correlations
 
 ```{r}
+msa <- generateOutcomeCorrelations(msa, method = "kendall")
 plotOutcomeCorrelations(msa, groups = c(2,4,5,6))
 ```
 

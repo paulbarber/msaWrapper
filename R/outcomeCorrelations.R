@@ -1,6 +1,7 @@
-#' plotOutcomeCorrelations
+#' generateOutcomeCorrelations
 #'
-#' This function plots a volcano plot all covars against outcome.
+#' This function correlates all covars against outcome.
+#' It places the results in the msaWrapper.
 #' Usually use kendall rank correlation for tte and ordinal class.
 #' For tte data, use only the events, ignoring censored data.
 #'
@@ -10,16 +11,9 @@
 #' @param groups To restrict covars to those in certain groups.
 #' @export
 #'
-plotOutcomeCorrelations <- function(msa, method = c("kendall", "pearson", "spearman"),
-                                    textSize = 3, groups = vector()){
+generateOutcomeCorrelations <- function(msa, method = c("kendall", "pearson", "spearman")){
 
   method <- match.arg(method)
-
-  if(length(groups)>0){
-    data <- msa$data[, msa$group %in% groups]
-  } else {
-    data <- msa$data
-  }
 
   if(class(msa) == "msaWrapperTte"){
     outcome <- ifelse(msa$outcome$event, msa$outcome$time, NA)
@@ -27,7 +21,7 @@ plotOutcomeCorrelations <- function(msa, method = c("kendall", "pearson", "spear
     outcome <- msa$outcome
   }
 
-  all_data <- data
+  all_data <- msa$data
   covars <- vector()
   correlation <- vector()
   logpval <- vector()
@@ -48,10 +42,37 @@ plotOutcomeCorrelations <- function(msa, method = c("kendall", "pearson", "spear
   logpval <- log10(logpval)
 
   cor_data <- data.frame(covars, correlation, logpval)
+
+  msa$outcomeCorrelations <- cor_data
+
+  return(msa)
+}
+
+
+#' plotOutcomeCorrelations
+#'
+#' This function plots a volcano plot all covars against outcome.
+#' Must use generateOutcomeCorrelations first.
+#' The values and method use are determined by generateOutcomeCorrelations.
+#'
+#' @param msa The msaWrapper object to work with.
+#' @param textSize Data labels text size.
+#' @param groups To restrict covars to those in certain groups.
+#' @export
+#'
+plotOutcomeCorrelations <- function(msa, textSize = 3, groups = vector()){
+
+  if(dim(msa$outcomeCorrelations)[1] < 1) stop()
+
+  if(length(groups)>0){
+    cor_data <- msa$outcomeCorrelations[msa$group %in% groups,]
+  } else {
+    cor_data <- msa$outcomeCorrelations
+  }
+
   e <- ifelse(cor_data$logpval < log10(0.1), 1, 0)
 
   ggplot(cor_data, aes(x = correlation, y = -logpval)) +
-    ggtitle(paste(method, "correlations"))+
     geom_point() +
     geom_hline(aes(yintercept = -log10(0.05)), colour="light grey", linetype="dashed") +
     geom_text(data = cor_data[e==1,], aes(label = covars), size = textSize)
