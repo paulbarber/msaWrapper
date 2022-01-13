@@ -4,7 +4,7 @@
 #' @param msa The msaWrapper object to work with.
 #' @export
 #'
-buildSPSignature <- function(msa, iterations) UseMethod("buildSPSignature")
+buildSPSignature <- function(msa, runName, iterations) UseMethod("buildSPSignature")
 
 #' buildSPSignature.msaWrapperOclass
 #'
@@ -15,7 +15,7 @@ buildSPSignature <- function(msa, iterations) UseMethod("buildSPSignature")
 #' @return An object containing the signature and it's performance.
 #' @export
 #'
-buildSPSignature.msaWrapperOclass <- function(msa, iterations=200){
+buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200){
 
   filename <- runName
   templateIniFilename <- "msaWrapper_SPSignature_tte_template.ini"
@@ -28,7 +28,7 @@ buildSPSignature.msaWrapperOclass <- function(msa, iterations=200){
   export_SPS_file(data, filename, type = 4, C = C)
 
   # make SPS ini files
-  createTemplateIni_BatchRegression_tte(templateIniFilename)
+  createTemplateIni_BatchRegression(templateIniFilename)
   ini.data <- ini::read.ini(templateIniFilename)
   ini.data$SESSION$`project dir` <-  getwd()
   ini.data$DATASET$filename <- filename
@@ -44,7 +44,10 @@ buildSPSignature.msaWrapperOclass <- function(msa, iterations=200){
   system(paste("SaddlePoint-Signature.exe", iniFilename))
 
   # extract basic results
-  riskSignatureDataframe <- read.table(paste(filename, "\\", regression_folder, "\\RiskScore_formula.txt"),
+  sigFile <- paste(filename, "\\", regression_folder, "\\RiskScore_formula.txt")
+  if(!file.exists(sigFile)) stop("No output produced by Saddle Point software. Is it installed with a valid license?")
+
+  riskSignatureDataframe <- read.table(sigFile,
                                        sep = '*', col.names = c("Weight", "Covariate"),
                                        stringsAsFactors = F, skip = 2, fill = T)
 
@@ -75,7 +78,7 @@ buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200){
   export_SPS_file(data, filename, type = 2, R = R)
 
   # make SPS ini files
-  createTemplateIni_BatchRegression_tte(templateIniFilename)
+  createTemplateIni_BatchRegression(templateIniFilename)
   ini.data <- ini::read.ini(templateIniFilename)
   ini.data$SESSION$`project dir` <-  getwd()
   ini.data$DATASET$filename <- filename
@@ -91,7 +94,10 @@ buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200){
   system(paste("SaddlePoint-Signature.exe", iniFilename))
 
   # extract basic results
-  riskSignatureDataframe <- read.table(paste(filename, "\\", regression_folder, "\\RiskScore_formula.txt"),
+  sigFile <- paste(filename, "\\", regression_folder, "\\RiskScore_formula.txt")
+  if(!file.exists(sigFile)) stop("No output produced by Saddle Point software. Is it installed with a valid license?")
+
+  riskSignatureDataframe <- read.table(sigFile,
                                        sep = '*', col.names = c("Weight", "Covariate"),
                                        stringsAsFactors = F, skip = 2, fill = T)
 
