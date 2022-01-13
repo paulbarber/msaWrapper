@@ -46,7 +46,7 @@ length(groups)
 ```{r}
 msa <- msaWrapperCreate(tte_data[,2:77], tte_data[,1],
                         group = groups, groupLabels = groupNames)
-summary(msa)
+print(msa)
 ```
 
 # Plot correlations

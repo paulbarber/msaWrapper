@@ -14,7 +14,6 @@ msaWrapperCreate <- function(data, outcome, rowsLabelled = F,
 
   if(is.vector(outcome) || is.factor(outcome)){ # Ordinal class data
     outcome <- as.factor(outcome)
-    names(outcome) <- c("class")
     type <- "ordinal class data"
     thisClass <- "msaWrapperOclass"
   } else if (is.data.frame(outcome)){ # tte data

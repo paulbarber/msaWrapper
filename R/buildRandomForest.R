@@ -1,5 +1,6 @@
 # TODO
 # Do I need to balance the classes? - leave to the caller
+# See help for RandomForestSRC - loads of examples - balancing, brier score, compare to Cox...
 
 #' buildRandomForest
 #'
@@ -21,12 +22,19 @@ buildRandomForest <- function(msa, iterations, byOOB) UseMethod("buildRandomFore
 buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE){
   stopifnot(msa$type == "ordinal class data")
 
-  # x is data to predict from (no outcomes, no labels)
-  x <- msa$data
-  # y is the one outcome column
-  y <- msa$outcome
+  # data is a Data frame containing the y-outcome (2 cols at the end) and x-variables. No label column.
+  data <- cbind(msa$data, msa$outcome)
 
-  current_x <- x
+  # formula ia a symbolic description of the model to be fit. See randomForestSRC
+  formula <- as.formula(outcome ~ .)
+  names(data) <- c(names(msa$data), "outcome")
+
+  # data will contain the outcome
+  current_data <- data
+  # x will have just the covariates
+  p = dim(data)[2]
+  outcome <- msa$outcome
+  current_x <- msa$data
 
   train_performance <- vector()
   OOB_performance <- vector()
@@ -36,7 +44,7 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
   valid_perf_sd <- vector()
   active_covars <- vector()
 
-  p = dim(x)[2]
+  p = dim(current_x)[2]
   active_covar_names <- list()
   active_covar_scores <- list()
   n_repeat = 1
@@ -50,14 +58,13 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
     #print(names(current_x))
 
     # vector/matrix to keep scores
-    imp_MDAcc <- matrix(nrow = current_p, ncol = iterations)
-    imp_MDGini <- matrix(nrow = current_p, ncol = iterations)
+    importance <- matrix(nrow = current_p, ncol = iterations)
     train_perf_i <- vector(length = iterations)
     OOB_perf_i <- vector(length = iterations)
     valid_perf_i <- vector(length = iterations)
 
     ProgressBar <- utils::txtProgressBar(min = 1, max = iterations,
-                                  initial = 1, style = 3)
+                                         initial = 1, style = 3)
 
     for (i in 1:iterations){
 
@@ -65,43 +72,45 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
 
       if(byOOB == FALSE){
         # split data randomly for cross validation
-        n = dim(current_x)[1]
+        n = dim(current_data)[1]
         ind <- sample(c(TRUE, FALSE), n, replace=TRUE, prob=c(0.5, 0.5))
-        train_x <- current_x[ind,]
-        train_y <- y[ind]
+        train_x <- current_data[ind,]
+        train_data <- current_data[ind,]
         valid_x <- current_x[!ind,]
-        valid_y <- y[!ind]
+        valid_data <- current_data[!ind,]
       } else {
         # Not doing cross validation
         train_x <- current_x
-        train_y <- y
+        train_data <- current_data
         valid_x <- NA
-        valid_y <- NA
+        valid_data <- NA
       }
 
       # train RF
-      rf <- randomForest::randomForest(train_x, train_y, importance=TRUE, proximity=TRUE)
+      rf <- randomForestSRC::rfsrc(formula,
+                                   data = train_data,
+                                   na.action = "na.impute",
+                                   importance = TRUE,
+                                   proximity = TRUE)
 
-      imp <- randomForest::importance(rf)
-      imp_MDAcc[,i] <- imp[,"MeanDecreaseAccuracy"]
-      imp_MDGini[,i] <- imp[,"MeanDecreaseGini"]
+      importance[,i] <- rf$importance[,1] # 1st col is "All", the other relate to other classes
 
       # raw training prediction
-      pred <- predict(rf, newdata = train_x)
-      train_perf_i[i] = (sum(pred == train_y) / length(train_y))
+      pred <- rf$class
+      train_perf_i[i] = (sum(pred == train_data$outcome) / length(train_data$outcome))
 
       # OOB prediction
-      pred <- rf$predicted
-      #pred2 <- predict(rf) # same as above
-      perf = (sum(pred == train_y) / length(train_y))
+      pred <- rf$class.oob
+      perf = (sum(pred == train_data$outcome) / length(train_data$outcome))
       OOB_perf_i[i] = perf
 
       if(byOOB == FALSE) {
         # Validation prediction instead
         pred <- predict(rf, newdata = valid_x)
-        perf = (sum(pred == valid_y) / length(valid_y))
+        perf = (sum(pred == valid_data$outcome) / length(valid_data$outcome))
         valid_perf_i[i] = perf
       }
+
     }
 
     close(ProgressBar)
@@ -115,10 +124,8 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
     valid_perf_sd <- c(valid_perf_sd, sd(valid_perf_i))
     active_covars <- c(active_covars, current_p)
 
-
     # Choose a covar to remove
-    score <- imp_MDGini
-    #score <- imp_MDAcc
+    score <- importance
 
     scores <- apply(score, 1, sum)
     active_covar_scores[[n_repeat]] <- scores
@@ -127,6 +134,7 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
 
     # reduce the covariates by one!!!!!!!!!!!!!
     current_x <- current_x[,scores_names[2:current_p]]
+    current_data <- cbind(current_x, outcome)
     n_repeat <- n_repeat+1
 
     # if x has been reduced to a vector, we are on the last covariate
@@ -150,7 +158,10 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
   optimal_p <- active_covars[max_i]
   optimal_names <- active_covar_names[[max_i]]
 
+  #x <- data[, -c(p-1,p)]
+  x <- msa$data
   optimal_x <- subset(x, select = optimal_names)
+  optimal_data <- cbind(optimal_x, outcome)
 
   print(paste("Optimal p=", optimal_p))
 
@@ -162,12 +173,15 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
     setTxtProgressBar(ProgressBar, i)
 
     # train RF
-    rf <- randomForest::randomForest(optimal_x, y, importance=TRUE, proximity=TRUE)
+    rf <- randomForestSRC::rfsrc(formula,
+                                 data = optimal_data,
+                                 na.action = "na.impute",
+                                 importance = TRUE,
+                                 proximity = TRUE)
 
     # OOB prediction
-    pred <- rf$predicted
-    #pred2 <- predict(rf) # same as above
-    perf = (sum(pred == y) / length(y))
+    pred <- rf$class.oob
+    perf = (sum(pred == optimal_data$outcome) / length(optimal_data$outcome))
 
     if(perf > best_perf){
       best_perf = perf
@@ -181,7 +195,7 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
                             OOB_performance, OOB_perf_sd,
                             valid_performance, valid_perf_sd)
 
-  # Return this object
+  # return this object
   structure(list(iterations, byOOB,
                  performance,
                  active_covar_names,
@@ -196,6 +210,7 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
                        "best_perf",
                        "trained_random_forest"),
             class = "msaWrapperRFClassifier")
+
 }
 
 #' buildRandomForest.msaWrapperTte
@@ -208,21 +223,23 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
 #' @export
 #'
 buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
-  stopifnot(msa$type == "time to event data")
-
-  # formula ia a symbolic description of the model to be fit. See randomForestSRC
-  formula <- Surv(time, event) ~ .
+  #stopifnot(msa$type == "time to event data")
 
   # data is a Data frame containing the y-outcome (2 cols at the end) and x-variables. No label column.
   data <- cbind(msa$data, msa$outcome)
+
+  # formula ia a symbolic description of the model to be fit. See randomForestSRC
+  formula <- as.formula(Surv(time, event) ~ .)
   names(data) <- c(names(msa$data), names(msa$outcome))
 
   # data will contain the outcome
   current_data <- data
   # x will have just the covariates
   p = dim(data)[2]
-  outcome <- data[, c(p-1,p)]
-  current_x <- data[, -c(p-1,p)]
+  #outcome <- data[, c(p-1,p)]
+  #current_x <- data[, -c(p-1,p)]
+  outcome <- msa$outcome
+  current_x <- msa$data
 
   train_c_index <- vector()
   OOB_c_index <- vector()
@@ -345,7 +362,8 @@ buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
   optimal_p <- active_covars[max_i]
   optimal_names <- active_covar_names[[max_i]]
 
-  x <- data[, -c(p-1,p)]
+  #x <- data[, -c(p-1,p)]
+  x <- msa$data
   optimal_x <- subset(x, select = optimal_names)
   optimal_data <- cbind(optimal_x, outcome)
 
@@ -392,8 +410,53 @@ buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
                        "performance",
                        "active_covar_names", "active_covar_scores",
                        "optimal_p", "Optimal_covars",
-                       "best_c_index",
+                       "best_perf",
                        "trained_random_forest"),
             class = "msaWrapperRandomSurvivalForest")
 
 }
+
+#' plotRandomForestPerformance
+#' Generic fn.
+#' Plot the training performance of a random forest model
+#' @param rf The RF object from buildRandomForest().
+#' @export
+#'
+plotRandomForestPerformance <- function(rf) UseMethod("plotRandomForestPerformance")
+
+#' plotRandomForestPerformance.msaWrapperRandomSurvivalForest
+#'
+#' Plot the training performance of a random forest model.
+#' @param rf The RF object from buildRandomForest().
+#' @export
+#'
+plotRandomForestPerformance.msaWrapperRandomSurvivalForest <- function(rf){
+
+  ggplot(rf$performance, aes(x = active_covars)) +
+    geom_line(aes(y = train_c_index), col = "red") +
+    geom_line(aes(y = OOB_c_index), col = "blue") +
+    geom_line(aes(y = train_c_index+train_ci_sd), col = "red", linetype = "dashed") +
+    geom_line(aes(y = train_c_index-train_ci_sd), col = "red", linetype = "dashed") +
+    geom_line(aes(y = OOB_c_index+OOB_ci_sd), col = "blue", linetype = "dashed") +
+    geom_line(aes(y = OOB_c_index-OOB_ci_sd), col = "blue", linetype = "dashed")
+
+}
+
+#' plotRandomForestPerformance.msaWrapperRFClassifier
+#'
+#' Plot the training performance of a random forest model.
+#' @param rf The RF object from buildRandomForest().
+#' @export
+#'
+plotRandomForestPerformance.msaWrapperRFClassifier <- function(rf){
+
+  ggplot(rf$performance, aes(x = active_covars)) +
+    geom_line(aes(y = train_performance), col = "red") +
+    geom_line(aes(y = OOB_performance), col = "blue") +
+    geom_line(aes(y = train_performance+train_perf_sd), col = "red", linetype = "dashed") +
+    geom_line(aes(y = train_performance-train_perf_sd), col = "red", linetype = "dashed") +
+    geom_line(aes(y = OOB_performance+OOB_perf_sd), col = "blue", linetype = "dashed") +
+    geom_line(aes(y = OOB_performance-OOB_perf_sd), col = "blue", linetype = "dashed")
+
+}
+
