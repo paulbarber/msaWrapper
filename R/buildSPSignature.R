@@ -53,7 +53,9 @@ buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200){
 
   print(riskSignatureDataframe)
 
-  riskSignatureDataframe
+  structure(list(runName, iterations, regression_folder, riskSignatureDataframe, msa$type),
+            .Names = c("runName", "iterations", "regressionFolder", "riskSignature", "dataType"),
+            class = "msaWrapperSPSignatureOclass")
 }
 
 #' buildSPSignature.msaWrapperTte
@@ -103,7 +105,9 @@ buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200){
 
   print(riskSignatureDataframe)
 
-  riskSignatureDataframe
+  structure(list(runName, iterations, regression_folder, riskSignatureDataframe, msa$type),
+            .Names = c("runName", "iterations", "regressionFolder", "riskSignature", "dataType"),
+            class = "msaWrapperSPSignatureTte")
 }
 
 #' addSpacesToIniFile

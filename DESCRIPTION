@@ -12,9 +12,11 @@ Imports:
     ggplot2,
     ini,
     reshape2,
+    strex,
     stringr,
     survival,
-    survminer
+    survminer,
+    tidyr
 Suggests:
     knitr,
     devtools,

@@ -4,7 +4,7 @@
 \alias{buildSPSignature.msaWrapperOclass}
 \title{buildSPSignature.msaWrapperOclass}
 \usage{
-\method{buildSPSignature}{msaWrapperOclass}(msa, iterations = 200)
+\method{buildSPSignature}{msaWrapperOclass}(msa, runName, iterations = 200)
 }
 \arguments{
 \item{msa}{The msaWrapper object to work with.}
