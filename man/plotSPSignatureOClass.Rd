@@ -11,6 +11,6 @@ plotSPSignatureOClass(SPSig)
 }
 \description{
 Plot performance of ordinal class signature/risk score.
-Required from the results folder
-BetaZ_<runName>.dat
+Required from the results folder:
+RiskScoreDataset_ordinal_reg2.dat
 }

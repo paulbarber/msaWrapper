@@ -1,13 +1,13 @@
 # TODO Test and tidy up all these...
-# TODO use surminer to do the KM plot in line with plot outcomes in this package.
+# TODO use survminer to do the KM plot in line with plot outcomes in this package.
 # TODO Setup bootstrapping to get a 95% CI on the measures - maybe in another file? (see beta_tests)
 
 
 #' plotSPSignatureOClass
 #'
 #' Plot performance of ordinal class signature/risk score.
-#' Required from the results folder
-#' BetaZ_<runName>.dat
+#' Required from the results folder:
+#'   RiskScoreDataset_ordinal_reg2.dat
 #'
 #' @param SPSig Object returned by buildSPSignature.msaWrapperOclass
 #' @export
@@ -16,26 +16,41 @@ plotSPSignatureOClass <- function(SPSig){
 
   stopifnot(class(SPSig)=="msaWrapperSPSignatureOclass")
 
-  # Load BetaZ file of risk scores and outcomes
-  risk.file <- paste0(SPSig$runName, "\\BetaZ_", SPSig$runName, ".dat")    # TODO is this right???
+  title <- SPSig$runName
+  data.name <- SPSig$runName
+  data.folder <- paste0(data.name, "/")
+  results.folder <- paste0(data.folder, SPSig$regressionFolder, "/")
+
+  # Load file of risk scores and outcomes
+  risk.file <- paste0(results.folder, "RiskScoreDataset_ordinal_reg2.dat")
   N <- strex::str_last_number(grep("N=", readLines(risk.file), value = TRUE), decimals = F)
   data <- read.delim(risk.file, sep = " ", skip = 3,
                      header = F,
-                     col.names = c("ID", "RiskScore", "Class"),
                      nrows = N)
+
+  if(ncol(data) == 3){
+    names(data) = c("ID", "RiskScore", "Class")
+  }  else {
+    names(data) = c("RiskScore", "Class")
+  }
+
+  print(cor.test(data$RiskScore, data$Class, method = "kendall"))
+
+  data$Class <- as.factor(data$Class)
 
   ggp <- ggplot(data, aes(x = Class, y = RiskScore, group = Class)) +
     geom_boxplot(outlier.colour = NA) +
     geom_jitter(width = 0.2, col = rgb(0.1, 0.2, 0.8, 0.3)) +
     theme_classic()
 
+  print(ggp)
 }
 
 #' plotSPSignatureTte
 #'
 #' Plot performance of tte signature/risk score. Print other stats.
-#' Required from the results folder
-#' BetaZ_<runName>.dat
+#' Required from the results folder:
+#'  RiskScoreDataset_tte_reg2.dat
 #'
 #' @param SPSig Object returned by buildSPSignature.msaWrapperTte
 #' @export
@@ -44,13 +59,24 @@ plotSPSignatureTte <- function(SPSig){
 
   stopifnot(class(SPSig)=="msaWrapperSPSignatureOclass")
 
-  # Load BetaZ file of risk scores and outcomes
-  risk.file <- paste0(SPSig$runName, "\\BetaZ_", SPSig$runName, ".dat")
+  title <- SPSig$runName
+  data.name <- SPSig$runName
+  data.folder <- paste0(data.name, "/")
+  results.folder <- paste0(data.folder, SPSig$regressionFolder, "/")
+
+  # Load file of risk scores and outcomes
+  risk.file <- paste0(results.folder, "RiskScoreDataset_tte_reg2.dat")
   N <- strex::str_last_number(grep("N=", readLines(risk.file), value = TRUE), decimals = F)
   data <- read.delim(risk.file, sep = " ", skip = 3,
                      header = F,
                      col.names = c("ID", "RiskScore", "time", "event"),
                      nrows = N)
+
+  if(ncol(data) == 4){
+    names(data) = c("ID", "RiskScore", "time", "event")
+  }  else {
+    names(data) = c("RiskScore", "time", "event")
+  }
 
   # C-index
   # Consider only events
@@ -61,8 +87,12 @@ plotSPSignatureTte <- function(SPSig){
   tied <- concordancetest[["count"]][["tied.x"]] + concordancetest[["count"]][["tied.y"]]
   cind <- (concordance+tied)/sum(concordancetest$count)
 
-  # Plot KM curve, and get log rank pval
+  print(paste("C-Index score:", signif(cind, digits = 3)))
 
+  # rank correlation
+  print(cor.test(data$RiskScore, data$time, method = "kendall"))
+
+  # Plot KM curve, and get log rank pval
   breaks <- quantile(data$RiskScore, probs = c(0.0, 0.5, 1.0), na.rm = T)
   data$Risk <- cut(data$RiskScore, breaks = breaks, labels = c("low", "high"),
                    include.lowest = T)
@@ -80,8 +110,8 @@ plotSPSignatureTte <- function(SPSig){
   print(survminer::ggrisktable(km, data=data) + theme_cleantable())
   print(survival::survdiff(SurvObj ~ Risk, data=data))
   print(summary(coxph(SurvObj ~ Risk, data=data)))
-  print(paste("C-Index score:", signif(cind, digits = 3)))
 
+  print(ggp)
 }
 
 #' plotSPSignatureBetaSwimmers
@@ -91,7 +121,7 @@ plotSPSignatureTte <- function(SPSig){
 #' Required from data folder:
 #'   <data.name>.names file
 #'
-#' Required from the parent folder of results.folder
+#' Required from the parent folder of data.folder
 #'   SPS_Signature_logfile.txt
 #'
 #' Required from results.folder
@@ -104,13 +134,13 @@ plotSPSignatureTte <- function(SPSig){
 #'
 plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE) {
 
-  data.folder <- SPSig$runName
-  data.name <- SPSig$runName
-  results.folder <- SPSig$regressionFolder
   title <- SPSig$runName
+  data.name <- SPSig$runName
+  data.folder <- paste0(data.name, "/")
+  results.folder <- paste0(data.folder, SPSig$regressionFolder, "/")
 
   # Get covariate names
-  covar.names <- read.delim(paste0(data.folder, data.name, ".names"), sep = " ", header = F)
+  covar.names <- read.delim(paste0(results.folder, "RiskScoreEngine/", data.name, ".names"), sep = " ", header = F)
   covar.names <- covar.names[,2]
 
   # Get critical Beta value
@@ -125,8 +155,8 @@ plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE
   Betas <- Betas[-grep("active=", Betas[,1]),]  # Alternate rows are labels
   colnames(Betas) <- covar.names
 
-  Betas.error <- as.data.frame(sapply(Betas, str_last_number, decimals = T))
-  Betas <- as.data.frame(sapply(Betas, str_first_number_after_first, pattern = "]=",
+  Betas.error <- as.data.frame(sapply(Betas, strex::str_last_number, decimals = T))
+  Betas <- as.data.frame(sapply(Betas, strex::str_first_number_after_first, pattern = "]=",
                                 decimals = T, negs = T))
 
   # Get progression of active covariates from active_covariates.txt
@@ -135,11 +165,11 @@ plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE
 
   # Find the optimal points
   optimum_performance <- strex::str_last_number(grep("proposed nr of covariates, test data performance:",
-                                              readLines(paste0(results.folder,
+                                              readLines(paste0(data.folder,
                                                                "../SPS_Signature_logfile.txt")),
                                               value = TRUE))
   optimum_overfitting <- strex::str_last_number(grep("proposed nr of covariates, avoiding overfitting:",
-                                              readLines(paste0(results.folder,
+                                              readLines(paste0(data.folder,
                                                                "../SPS_Signature_logfile.txt")),
                                               value = TRUE))
 

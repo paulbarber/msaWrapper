@@ -18,7 +18,7 @@ Plot of Betas through the optimisation of SP Signature batch regression.
 Required from data folder:
 <data.name>.names file
 
-Required from the parent folder of results.folder
+Required from the parent folder of data.folder
 SPS_Signature_logfile.txt
 
 Required from results.folder

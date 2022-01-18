@@ -11,6 +11,6 @@ plotSPSignatureTte(SPSig)
 }
 \description{
 Plot performance of tte signature/risk score. Print other stats.
-Required from the results folder
-BetaZ_<runName>.dat
+Required from the results folder:
+RiskScoreDataset_tte_reg2.dat
 }

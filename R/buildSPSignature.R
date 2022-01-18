@@ -44,7 +44,10 @@ buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200){
   system(paste("SaddlePoint-Signature.exe", iniFilename))
 
   # extract basic results
-  sigFile <- paste(filename, "\\", regression_folder, "\\RiskScore_formula.txt")
+  info.file <- paste0(filename, "/", regression_folder, "/RiskScoreEngine/PredictionSettings.txt")
+  writeLines(readLines(con = info.file, warn = F))
+
+  sigFile <- paste0(filename, "/", regression_folder, "/RiskScore_formula.txt")
   if(!file.exists(sigFile)) stop("No output produced by Saddle Point software. Is it installed with a valid license?")
 
   riskSignatureDataframe <- read.table(sigFile,
@@ -96,7 +99,10 @@ buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200){
   system(paste("SaddlePoint-Signature.exe", iniFilename))
 
   # extract basic results
-  sigFile <- paste(filename, "\\", regression_folder, "\\RiskScore_formula.txt")
+  info.file <- paste0(filename, "/", regression_folder, "/RiskScoreEngine/PredictionSettings.txt")
+  writeLines(readLines(con = info.file, warn = F))
+
+  sigFile <- paste0(filename, "/", regression_folder, "/RiskScore_formula.txt")
   if(!file.exists(sigFile)) stop("No output produced by Saddle Point software. Is it installed with a valid license?")
 
   riskSignatureDataframe <- read.table(sigFile,
