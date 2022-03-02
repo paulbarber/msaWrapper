@@ -410,7 +410,7 @@ buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
             .Names = c("iterations", "byOOB",
                        "performance",
                        "active_covar_names", "active_covar_scores",
-                       "optimal_p", "optimal_covars", "optimal_scores",
+                       "optimal_p", "optimal_covars", "optimal_importance",
                        "optimal_cindex",
                        "trained_random_forest"),
             class = "msaWrapperRandomSurvivalForest")
