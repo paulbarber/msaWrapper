@@ -16,7 +16,8 @@ Imports:
     stringr,
     survival,
     survminer,
-    tidyr
+    tidyr,
+    randomForestSRC
 Suggests:
     knitr,
     devtools,
