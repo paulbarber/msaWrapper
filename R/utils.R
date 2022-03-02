@@ -76,7 +76,7 @@ print.msaWrapperTte <- function(msa, ...){
   msaWrapperPrint(msa, ...)
   t <- table(msa$outcome$event)
   print("Outcome:")
-  names(t) <- c("censored", "events")
+#  names(t) <- c("censored", "events")
   print(t)
 }
 
