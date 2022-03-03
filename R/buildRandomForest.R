@@ -25,7 +25,7 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
   # data is a Data frame containing the y-outcome (2 cols at the end) and x-variables. No label column.
   data <- cbind(msa$data, msa$outcome)
 
-  # formula ia a symbolic description of the model to be fit. See randomForestSRC
+  # formula is a symbolic description of the model to be fit. See randomForestSRC
   formula <- as.formula(outcome ~ .)
   names(data) <- c(names(msa$data), "outcome")
 
@@ -157,6 +157,7 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
 
   optimal_p <- active_covars[max_i]
   optimal_names <- active_covar_names[[max_i]]
+  optimal_scores <- active_covar_scores[[max_i]]
 
   #x <- data[, -c(p-1,p)]
   x <- msa$data
@@ -198,16 +199,18 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
   # return this object
   structure(list(iterations, byOOB,
                  performance,
+                 msa$colLabels,
                  active_covar_names,
                  active_covar_scores,
-                 optimal_p, optimal_names,
+                 optimal_p, optimal_names, optimal_scores,
                  best_perf,
                  best_rf),
             .Names = c("iterations", "byOOB",
                        "performance",
+                       "covar_names",
                        "active_covar_names", "active_covar_scores",
-                       "optimal_p", "optimal_covars",
-                       "best_perf",
+                       "optimal_p", "optimal_covars", "optimal_importance",
+                       "optimal_perfomance",
                        "trained_random_forest"),
             class = "msaWrapperRFClassifier")
 
@@ -334,7 +337,9 @@ buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
     scores <- apply(score, 1, sum)
     active_covar_scores[[n_repeat]] <- scores
 
+    # Get ordered list of the current names
     scores_names <- names(current_x)[order(scores)]
+    #scores_names <- names(current_x)[order(abs(scores))]
 
     # reduce the covariates by one!!!!!!!!!!!!!
     current_x <- current_x[,scores_names[2:current_p]]
@@ -402,6 +407,7 @@ buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
     # return this object
   structure(list(iterations, byOOB,
                  performance,
+                 msa$colLabels,
                  active_covar_names,
                  active_covar_scores,
                  optimal_p, optimal_names, optimal_scores,
@@ -409,6 +415,7 @@ buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
                  best_rf),
             .Names = c("iterations", "byOOB",
                        "performance",
+                       "covar_names",
                        "active_covar_names", "active_covar_scores",
                        "optimal_p", "optimal_covars", "optimal_importance",
                        "optimal_cindex",
@@ -417,47 +424,4 @@ buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
 
 }
 
-#' plotRandomForestPerformance
-#' Generic fn.
-#' Plot the training performance of a random forest model
-#' @param rf The RF object from buildRandomForest().
-#' @export
-#'
-plotRandomForestPerformance <- function(rf) UseMethod("plotRandomForestPerformance")
-
-#' plotRandomForestPerformance.msaWrapperRandomSurvivalForest
-#'
-#' Plot the training performance of a random forest model.
-#' @param rf The RF object from buildRandomForest().
-#' @export
-#'
-plotRandomForestPerformance.msaWrapperRandomSurvivalForest <- function(rf){
-
-  ggplot(rf$performance, aes(x = active_covars)) +
-    geom_line(aes(y = train_c_index), col = "red") +
-    geom_line(aes(y = OOB_c_index), col = "blue") +
-    geom_line(aes(y = train_c_index+train_ci_sd), col = "red", linetype = "dashed") +
-    geom_line(aes(y = train_c_index-train_ci_sd), col = "red", linetype = "dashed") +
-    geom_line(aes(y = OOB_c_index+OOB_ci_sd), col = "blue", linetype = "dashed") +
-    geom_line(aes(y = OOB_c_index-OOB_ci_sd), col = "blue", linetype = "dashed")
-
-}
-
-#' plotRandomForestPerformance.msaWrapperRFClassifier
-#'
-#' Plot the training performance of a random forest model.
-#' @param rf The RF object from buildRandomForest().
-#' @export
-#'
-plotRandomForestPerformance.msaWrapperRFClassifier <- function(rf){
-
-  ggplot(rf$performance, aes(x = active_covars)) +
-    geom_line(aes(y = train_performance), col = "red") +
-    geom_line(aes(y = OOB_performance), col = "blue") +
-    geom_line(aes(y = train_performance+train_perf_sd), col = "red", linetype = "dashed") +
-    geom_line(aes(y = train_performance-train_perf_sd), col = "red", linetype = "dashed") +
-    geom_line(aes(y = OOB_performance+OOB_perf_sd), col = "blue", linetype = "dashed") +
-    geom_line(aes(y = OOB_performance-OOB_perf_sd), col = "blue", linetype = "dashed")
-
-}
 
