@@ -90,7 +90,7 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
       rf <- randomForestSRC::rfsrc(formula,
                                    data = train_data,
                                    na.action = "na.impute",
-                                   importance = TRUE,
+                                   importance = "permute",    # TRUE uses "anti", better to use "permute"  https://explained.ai/rf-importance/
                                    proximity = TRUE)
 
       importance[,i] <- rf$importance[,1] # 1st col is "All", the other relate to other classes
@@ -177,7 +177,7 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
     rf <- randomForestSRC::rfsrc(formula,
                                  data = optimal_data,
                                  na.action = "na.impute",
-                                 importance = TRUE,
+                                 importance = "permute",    # TRUE uses "anti", better to use "permute"  https://explained.ai/rf-importance/
                                  proximity = TRUE)
 
     # OOB prediction
@@ -298,7 +298,7 @@ buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
       rf <- randomForestSRC::rfsrc(formula,
                   data = train_data,
                   na.action = "na.impute",
-                  importance = TRUE,
+                  importance = "permute",    # TRUE uses "anti", better to use "permute"  https://explained.ai/rf-importance/
                   proximity = TRUE)
 
       importance[,i] <- rf$importance
@@ -334,12 +334,16 @@ buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
     # Choose a covar to remove
     score <- importance
 
+    # sum scores over all the iterations
     scores <- apply(score, 1, sum)
+
+    # raw scores
     active_covar_scores[[n_repeat]] <- scores
+    # normalised scores per run
+    #active_covar_scores[[n_repeat]] <- scores / sum(abs(scores))
 
     # Get ordered list of the current names
-    scores_names <- names(current_x)[order(scores)]
-    #scores_names <- names(current_x)[order(abs(scores))]
+    scores_names <- names(current_x)[order(scores)]    # score can be negative, but -ve is always bad
 
     # reduce the covariates by one!!!!!!!!!!!!!
     current_x <- current_x[,scores_names[2:current_p]]
@@ -386,7 +390,7 @@ buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
     rf <- randomForestSRC::rfsrc(formula,
                 data = optimal_data,
                 na.action = "na.impute",
-                importance = TRUE,
+                importance = "permute",    # TRUE uses "anti", better to use "permute"  https://explained.ai/rf-importance/
                 proximity = TRUE)
 
     # OOB prediction

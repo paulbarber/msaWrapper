@@ -16,6 +16,7 @@ knitr::opts_chunk$set(
 
 ```{r setup}
 library(msaWrapper)
+library(ggplot2)
 ```
 
 # Load tte data
@@ -111,6 +112,35 @@ RSF <- buildRandomForest(reduced_msa, iterations = 10)
 plotRandomForestPerformance(RSF)
 plotRandomForestImportanceSwimmers(RSF)
 print(RSF$optimal_covars)
+```
+
+## Use it for prediction
+
+Use "predict" to get the predicted risk.
+
+```{r}
+
+# If you have new data from a test set, do this
+# NB Although this optimal RSF was trained on less covars (maybe 4), we can give it the full data set and it will select the cols
+# This could be msa$data or reduced_msa$data, or reduced_msa$data[, names(reduced_msa$data) %in% RSF$optimal_covars ]
+# If the data it needs is not in the data frame, you get this error: Error in `[.data.frame`(newdata, , xvar.names, drop = FALSE) :  undefined columns selected
+
+pred_new <- predict(RSF$trained_random_forest, newdata = msa$data, na.action = "na.impute")
+c.index = randomForestSRC::get.cindex(reduced_msa$outcome$time, reduced_msa$outcome$event, -pred_new$predicted)
+
+d <- data.frame(pred_new$predicted, reduced_msa$outcome$time)
+ggplot(d, aes(y = -pred_new.predicted, x = reduced_msa.outcome.time)) +
+  geom_point() + 
+  geom_smooth(method = "glm")
+
+print(paste("C-index:", c.index))
+
+cor.test(pred_new$predicted, reduced_msa$outcome$time, method = "kendall")
+
+# The above was actually using the training data. Predictions on the training data can be found simply with...
+pred_trained <- predict(RSF$trained_random_forest)
+#c.index = randomForestSRC::get.cindex(reduced_msa$outcome$time, reduced_msa$outcome$event, -pred_trained$predicted)  # Somehow may have different numbers of outcomes, this dataset has NA outcomes?
+
 ```
 
 ```{r}

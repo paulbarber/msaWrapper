@@ -74,7 +74,8 @@ plotRandomForestImportanceSwimmers <- function(RSF, show_best_performance_line =
     }
   }
   names(data_long) <- c("Covariate", "Score", "Active")
-  largest.Score <- max(abs(data_long$Score))
+  largest.Score <- max(data_long$Score)
+  smallest.Score <- min(data_long$Score)
   # last one, just the last covariate
   data_long <- rbind(data_long, list(RSF$active_covar_names[[length(RSF$active_covar_names)]][1], largest.Score, 1))
 
@@ -87,9 +88,9 @@ plotRandomForestImportanceSwimmers <- function(RSF, show_best_performance_line =
     theme_light() +
     theme(axis.text.y = element_text(size = text.size)) +
     geom_tile() +
-    scale_fill_gradientn(colours = c("dark green", "light blue", "red"),
-                         limits = c(-largest.Score, largest.Score),
-                         values = scales::rescale(c(-1/largest.Score, 0, 1/largest.Score), c(0, 1)),    # scale with extreme colours at beta=1.0
+    scale_fill_gradientn(colours = c("light blue", "red"),
+                         limits = c(smallest.Score, largest.Score),
+                         values = scales::rescale(c(1/smallest.Score, 1/largest.Score), c(0, 1)),    # scale with extreme colours at beta=1.0
                          na.value = "transparent") +
     geom_vline(xintercept = optimum_performance, linetype="dashed") +
     ggtitle(title) +
