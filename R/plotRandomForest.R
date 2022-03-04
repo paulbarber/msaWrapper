@@ -15,7 +15,7 @@ plotRandomForestPerformance <- function(rf) UseMethod("plotRandomForestPerforman
 #'
 plotRandomForestPerformance.msaWrapperRandomSurvivalForest <- function(rf){
 
-  ggplot(rf$performance, aes(x = active_covars)) +
+  ggp <- ggplot(rf$performance, aes(x = active_covars)) +
     geom_line(aes(y = train_c_index), col = "red") +
     geom_line(aes(y = OOB_c_index), col = "blue") +
     geom_line(aes(y = train_c_index+train_ci_sd), col = "red", linetype = "dashed") +
@@ -23,6 +23,7 @@ plotRandomForestPerformance.msaWrapperRandomSurvivalForest <- function(rf){
     geom_line(aes(y = OOB_c_index+OOB_ci_sd), col = "blue", linetype = "dashed") +
     geom_line(aes(y = OOB_c_index-OOB_ci_sd), col = "blue", linetype = "dashed")
 
+  print(ggp)
 }
 
 #' plotRandomForestPerformance.msaWrapperRFClassifier
@@ -33,7 +34,7 @@ plotRandomForestPerformance.msaWrapperRandomSurvivalForest <- function(rf){
 #'
 plotRandomForestPerformance.msaWrapperRFClassifier <- function(rf){
 
-  ggplot(rf$performance, aes(x = active_covars)) +
+  ggp <- ggplot(rf$performance, aes(x = active_covars)) +
     geom_line(aes(y = train_performance), col = "red") +
     geom_line(aes(y = OOB_performance), col = "blue") +
     geom_line(aes(y = train_performance+train_perf_sd), col = "red", linetype = "dashed") +
@@ -41,6 +42,7 @@ plotRandomForestPerformance.msaWrapperRFClassifier <- function(rf){
     geom_line(aes(y = OOB_performance+OOB_perf_sd), col = "blue", linetype = "dashed") +
     geom_line(aes(y = OOB_performance-OOB_perf_sd), col = "blue", linetype = "dashed")
 
+  print(ggp)
 }
 
 
