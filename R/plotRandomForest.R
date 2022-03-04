@@ -53,7 +53,7 @@ plotRandomForestPerformance.msaWrapperRFClassifier <- function(rf){
 #' @param title An optional title for the plot.
 #' @export
 #'
-plotRandomForestImportanceSwimmers <- function(RSF, show_best_performance_line = TRUE, title = "") {
+plotRandomForestImportanceSwimmers <- function(RSF, show_best_performance_line = TRUE, title = "", text_size = NA) {
 
   # Get covariate names
   covar_names <- RSF$covar_names
@@ -79,18 +79,17 @@ plotRandomForestImportanceSwimmers <- function(RSF, show_best_performance_line =
   # last one, just the last covariate
   data_long <- rbind(data_long, list(RSF$active_covar_names[[length(RSF$active_covar_names)]][1], largest.Score, 1))
 
-  text.size <- 750 / length(covar_names)   # by trial and error, this is a good height, if names not too long.
+  if(is.na(text_size)) text_size <- 256 / length(covar_names)   # by trial and error, this is a good height, if names not too long.
 
   # reorder factors to maintain original covar order
   data_long$Covariate <- factor(data_long$Covariate, levels = covar_names)
 
   ggp <- ggplot(data_long, aes(y = Covariate, x = Active, fill = Score)) +
     theme_light() +
-    theme(axis.text.y = element_text(size = text.size)) +
+    theme(axis.text.y = element_text(size = text_size)) +
     geom_tile() +
     scale_fill_gradientn(colours = c("light blue", "red"),
                          limits = c(smallest.Score, largest.Score),
-                         values = scales::rescale(c(1/smallest.Score, 1/largest.Score), c(0, 1)),    # scale with extreme colours at beta=1.0
                          na.value = "transparent") +
     geom_vline(xintercept = optimum_performance, linetype="dashed") +
     ggtitle(title) +
