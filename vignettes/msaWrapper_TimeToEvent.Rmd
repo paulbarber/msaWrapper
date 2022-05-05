@@ -118,7 +118,7 @@ print(RSF$optimal_covars)
 
 Use "predict" to get the predicted risk.
 
-```{r}
+```{r, eval=FALSE}
 
 # If you have new data from a test set, do this
 # NB Although this optimal RSF was trained on less covars (maybe 4), we can give it the full data set and it will select the cols
@@ -141,6 +141,14 @@ cor.test(pred_new$predicted, reduced_msa$outcome$time, method = "kendall")
 pred_trained <- predict(RSF$trained_random_forest)
 #c.index = randomForestSRC::get.cindex(reduced_msa$outcome$time, reduced_msa$outcome$event, -pred_trained$predicted)  # Somehow may have different numbers of outcomes, this dataset has NA outcomes?
 
+```
+
+# Build Cox Elastic Net regularized model
+
+```{r}
+CEL <- buildCoxElasticNet(reduced_msa, iterations = 10)
+print(CEL$optimal_covars)
+print(CEL$optimal_coefs)
 ```
 
 ```{r}

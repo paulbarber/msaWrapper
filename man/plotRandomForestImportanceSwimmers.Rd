@@ -7,7 +7,8 @@
 plotRandomForestImportanceSwimmers(
   RSF,
   show_best_performance_line = TRUE,
-  title = ""
+  title = "",
+  text_size = NA
 )
 }
 \arguments{
