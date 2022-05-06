@@ -3,8 +3,10 @@ This package unifies the exploration and use of multivariate survival analysis m
 
 ## Installation
 With devtools use:
+```
 library(devtools)
 install_github("PaulBarber/msaWrapper")
+```
 
 ## Developer
 Git clone the repo. Open the RStudio project included.
