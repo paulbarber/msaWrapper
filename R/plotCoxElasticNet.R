@@ -5,7 +5,7 @@
 #' @export
 #'
 plotCoxElasticNetCoefs <- function(cen){
-  print(plot(cen$glmnet_model, label = T))
+  plot(cen$glmnet_model, label = T)
 }
 
 #' plotCoxElasticNetPerformance
