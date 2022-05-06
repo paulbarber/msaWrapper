@@ -146,9 +146,13 @@ pred_trained <- predict(RSF$trained_random_forest)
 # Build Cox Elastic Net regularized model
 
 ```{r}
-CEL <- buildCoxElasticNet(reduced_msa, iterations = 10)
-print(CEL$optimal_covars)
-print(CEL$optimal_coefs)
+CEN <- buildCoxElasticNet(reduced_msa, iterations = 10)
+print(CEN$optimal_covars)
+print(CEN$optimal_coefs)
+
+plotCoxElasticNetCoefs(CEN)
+plotCoxElasticNetPerformance(CEN)
+
 ```
 
 ```{r}

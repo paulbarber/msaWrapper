@@ -30,7 +30,15 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200){
 
 #' buildCoxElasticNet.msaWrapperTte
 #'
-#' Build a Cox Elastic Net regularized model for ordinal class outcome
+#' Build a Cox Elastic Net regularized model for ordinal class outcome.
+#' Uses glmnet::cv.glmnet() for optimisation.
+#' Uses 3-fold cross validation (the minimum glmnet allows).
+#' Data are normalised to zero mean and unit sd.
+#' Missing data are imputed with the mean.
+#' Returns optimal values from the peak of cross validation performance,
+#' and a 'strict' values from the most regularized model with
+#' performance within 1 standard deviation of the peak value.
+#'
 #' @param msa The msaWrapper object to work with.
 #' @param iterations The number of cv.glmnet calls to make.
 #' @return An object containing the trained model and it's performance.
@@ -48,6 +56,9 @@ buildCoxElasticNet.msaWrapperTte <- function(msa, iterations=200){
   # impute
   x[] <- lapply(x, NA2mean)
 
+  # Scale zero mean and unit sd
+  x <- scale(x)
+
   # Remove any NA outcomes
   x <- x[!is.na(y[1]),]
   y <- y[!is.na(y[1]),]
@@ -61,9 +72,14 @@ buildCoxElasticNet.msaWrapperTte <- function(msa, iterations=200){
   ProgressBar <- utils::txtProgressBar(min = 0, max = iterations,
                                        initial = 0, style = 3)
 
+  # Use glmnet's built-in cross validation (nfolds = 3) cv.glmnet()
+  # Returns coefficients and performance over a range of elastic net lambda.
+  # Use performance over many iterations to find optimal lambdas.
+  # Then extract coefficients etc at these lambdas using glmnet() later
+
   for (i in 1:iterations)
   {
-    fit <- glmnet::cv.glmnet(x, y, family = "cox", type.measure = "C")
+    fit <- glmnet::cv.glmnet(x, y, family = "cox", type.measure = "C", nfolds = 3)
     perf = data.frame(fit$lambda, fit$cvm)
     lambdas <- rbind(lambdas, perf)
     utils::setTxtProgressBar(ProgressBar, i)
@@ -103,13 +119,18 @@ buildCoxElasticNet.msaWrapperTte <- function(msa, iterations=200){
   best_Predicted_risk <- predict(glmnet_fit, x, s = best_lambda)[,1]
   strict_Predicted_risk <- predict(glmnet_fit, x, s = best1se_lambda)[,1]
 
-  # return this object
-  structure(list(iterations,
+  performance <- data.frame(lambdas[1], lambdas[2], lambda_sd[2])
+  names(performance) <- c("lambda", "c_index", "sd")
+
+    # return this object
+  structure(list(iterations, x, y,
+                 performance,
                  msa$colLabels,
                  optimal_p, optimal_names, optimal_scores, best_lambda, best_perf,
                  strict_p, strict_names, strict_scores, best1se_lambda, best1se_perf,
                  glmnet_fit, best_Predicted_risk, strict_Predicted_risk),
-            .Names = c("iterations",
+            .Names = c("iterations", "x", "y",
+                       "performance",
                        "covar_names",
                        "optimal_p", "optimal_covars", "optimal_coefs", "optimal_lambda", "optimal_cindex",
                        "strict_p", "strict_covars", "strict_coefs", "strict_lambda", "strict_cindex",

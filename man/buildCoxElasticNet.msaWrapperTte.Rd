@@ -15,5 +15,12 @@
 An object containing the trained model and it's performance.
 }
 \description{
-Build a Cox Elastic Net regularized model for ordinal class outcome
+Build a Cox Elastic Net regularized model for ordinal class outcome.
+Uses glmnet::cv.glmnet() for optimisation.
+Uses 3-fold cross validation (the minimum glmnet allows).
+Data are normalised to zero mean and unit sd.
+Missing data are imputed with the mean.
+Returns optimal values from the peak of cross validation performance,
+and a 'strict' values from the most regularized model with
+performance within 1 standard deviation of the peak value.
 }
