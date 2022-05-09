@@ -4,12 +4,15 @@
 \alias{buildSPSignature.msaWrapperOclass}
 \title{buildSPSignature.msaWrapperOclass}
 \usage{
-\method{buildSPSignature}{msaWrapperOclass}(msa, runName, iterations = 200)
+\method{buildSPSignature}{msaWrapperOclass}(msa, runName, iterations = 200, inifile = NULL)
 }
 \arguments{
 \item{msa}{The msaWrapper object to work with.}
 
 \item{iterations}{The number of cross validation iterations to make.}
+
+\item{inifile}{Optional ini file to use a template with regression options.
+If NULL, the template ini created by createTemplateIni_BatchRegression() will be used.}
 }
 \value{
 An object containing the signature and it's performance.
