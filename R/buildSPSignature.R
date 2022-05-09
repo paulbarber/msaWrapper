@@ -99,6 +99,8 @@ buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200, inifile
   ini.data$`BATCH REGRESSION`$`number of training sets` <- iterations
   ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`analysis dir` <- filename
   ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`regression dir` <- regression_folder
+
+  iniFilename <- paste0(runName, ".ini")
   ini::write.ini(ini.data, iniFilename)
   # replace "=" by " = " because SPS needs the spaces that ini package does not add.
   addSpacesToIniFile(iniFilename)
