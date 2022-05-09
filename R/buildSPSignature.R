@@ -134,6 +134,11 @@ buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200, inifile
 addSpacesToIniFile <- function(filename){
   tx  <- readLines(filename)
   tx  <- gsub("=", " = ", x = tx)
+
+  # Correct possible mistakes created
+  tx  <- gsub("width  =  ", "width = ", x = tx)
+  tx  <- gsub("default  =  ", "default = ", x = tx)
+
   writeLines(tx, con = filename)
 }
 
@@ -231,7 +236,6 @@ createTemplateIni_BatchRegression <- function(filename){
   cat("\n")
   cat("[BATCH REGRESSION]\n")
   cat("regression type = Batch Cox, 50/50 CV\n")
-  cat("regulariser = Ridge (L2)\n")
   cat("primary risk = 1\n")
   cat("number of training sets = <set this> **************\n")
   cat("cross-validation = cross-validate by error counting\n")
