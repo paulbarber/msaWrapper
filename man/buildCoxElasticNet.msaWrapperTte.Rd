@@ -4,12 +4,24 @@
 \alias{buildCoxElasticNet.msaWrapperTte}
 \title{buildCoxElasticNet.msaWrapperTte}
 \usage{
-\method{buildCoxElasticNet}{msaWrapperTte}(msa, iterations = 200)
+\method{buildCoxElasticNet}{msaWrapperTte}(msa, iterations = 200, alpha = 1)
 }
 \arguments{
 \item{msa}{The msaWrapper object to work with.}
 
 \item{iterations}{The number of cv.glmnet calls to make.}
+
+\item{alpha}{The elastic net balancing parameter. 1 = lasso, 0 = ridge.
+It is known that the ridge penalty shrinks the coefficients of correlated
+predictors towards each other while the lasso tends to pick one of them
+and discard the others. The elastic net penalty mixes these two:
+if predictors are correlated in groups, an α=0.5 tends to either select
+or leave out the entire group of features. This is a higher level parameter,
+and users might pick a value upfront or experiment with a few different
+values. One use of α is for numerical stability; for example, the elastic
+net with α=1−ϵ for some small ϵ>0 performs much like the lasso, but removes
+any degeneracies and wild behavior caused by extreme correlations.
+https://glmnet.stanford.edu/articles/glmnet.html}
 }
 \value{
 An object containing the trained model and it's performance.

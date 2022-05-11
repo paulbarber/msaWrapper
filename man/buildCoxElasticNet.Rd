@@ -4,7 +4,7 @@
 \alias{buildCoxElasticNet}
 \title{buildCoxElasticNet}
 \usage{
-buildCoxElasticNet(msa, iterations)
+buildCoxElasticNet(msa, iterations, alpha)
 }
 \arguments{
 \item{msa}{The msaWrapper object to work with.}

@@ -5,7 +5,7 @@
 #' @param msa The msaWrapper object to work with.
 #' @export
 #'
-buildCoxElasticNet <- function(msa, iterations) UseMethod("buildCoxElasticNet")
+buildCoxElasticNet <- function(msa, iterations, alpha) UseMethod("buildCoxElasticNet")
 
 
 # TODO: THIS
@@ -20,7 +20,7 @@ buildCoxElasticNet <- function(msa, iterations) UseMethod("buildCoxElasticNet")
 #' @return An object containing the trained model and it's performance.
 #' @export
 #'
-buildRandomForest.msaWrapperOclass <- function(msa, iterations=200){
+buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, alpha = 1){
   stopifnot(msa$type == "ordinal class data")
   stop("Cox Elastic Net not implemented for ordinal class data")
 }
@@ -41,10 +41,21 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200){
 #'
 #' @param msa The msaWrapper object to work with.
 #' @param iterations The number of cv.glmnet calls to make.
+#' @param alpha The elastic net balancing parameter. 1 = lasso, 0 = ridge.
+#' It is known that the ridge penalty shrinks the coefficients of correlated
+#' predictors towards each other while the lasso tends to pick one of them
+#' and discard the others. The elastic net penalty mixes these two:
+#' if predictors are correlated in groups, an α=0.5 tends to either select
+#' or leave out the entire group of features. This is a higher level parameter,
+#' and users might pick a value upfront or experiment with a few different
+#' values. One use of α is for numerical stability; for example, the elastic
+#' net with α=1−ϵ for some small ϵ>0 performs much like the lasso, but removes
+#' any degeneracies and wild behavior caused by extreme correlations.
+#' https://glmnet.stanford.edu/articles/glmnet.html
 #' @return An object containing the trained model and it's performance.
 #' @export
 #'
-buildCoxElasticNet.msaWrapperTte <- function(msa, iterations=200){
+buildCoxElasticNet.msaWrapperTte <- function(msa, iterations=200, alpha = 1){
   stopifnot(msa$type == "time to event data")
 
   # Must impute and NA values, use the mean of other values
@@ -79,7 +90,8 @@ buildCoxElasticNet.msaWrapperTte <- function(msa, iterations=200){
 
   for (i in 1:iterations)
   {
-    fit <- glmnet::cv.glmnet(x, y, family = "cox", type.measure = "C", nfolds = 3)
+    fit <- glmnet::cv.glmnet(x, y, family = "cox", type.measure = "C",
+                             nfolds = 3, alpha = alpha)
     perf = data.frame(fit$lambda, fit$cvm)
     lambdas <- rbind(lambdas, perf)
     utils::setTxtProgressBar(ProgressBar, i)
@@ -104,7 +116,7 @@ buildCoxElasticNet.msaWrapperTte <- function(msa, iterations=200){
   best1se_perf = lambdas[best1se_index, 2]
 
   # and now run glmnet once more
-  glmnet_fit <- glmnet::glmnet(x, y, family = "cox")
+  glmnet_fit <- glmnet::glmnet(x, y, family = "cox", alpha = alpha)
 
   coef_matrix <- coef(fit, s = best_lambda)
   optimal_p <- coef_matrix@p[2]
