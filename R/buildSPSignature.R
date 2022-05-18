@@ -4,7 +4,7 @@
 #' @param msa The msaWrapper object to work with.
 #' @export
 #'
-buildSPSignature <- function(msa, runName, iterations) UseMethod("buildSPSignature")
+buildSPSignature <- function(msa, runName, iterations, inifile) UseMethod("buildSPSignature")
 
 #' buildSPSignature.msaWrapperOclass
 #'
@@ -12,14 +12,14 @@ buildSPSignature <- function(msa, runName, iterations) UseMethod("buildSPSignatu
 #' This requires the installation and valid license for that software.
 #' @param msa The msaWrapper object to work with.
 #' @param iterations The number of cross validation iterations to make.
+#' @param inifile Optional ini file to use a template with regression options.
+#' If NULL, the template ini created by createTemplateIni_BatchRegression() will be used.
 #' @return An object containing the signature and it's performance.
 #' @export
 #'
-buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200){
+buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200, inifile=NULL){
 
   filename <- runName
-  templateIniFilename <- "msaWrapper_SPSignature_tte_template.ini"
-  iniFilename <- paste0(runName, ".ini")
   regression_folder <- "Reg_SETCV_MAP_L2"
 
   data <- cbind(msa$data, msa$outcome)
@@ -28,14 +28,19 @@ buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200){
   export_SPS_file(data, filename, type = 4, C = C)
 
   # make SPS ini files
-  createTemplateIni_BatchRegression(templateIniFilename)
-  ini.data <- ini::read.ini(templateIniFilename)
+  if(is.null(inifile)){
+    inifile <- "msaWrapper_SPSignature_tte_template.ini"
+    createTemplateIni_BatchRegression(inifile)
+  }
+  ini.data <- ini::read.ini(inifile)
   ini.data$SESSION$`project dir` <-  getwd()
   ini.data$DATASET$filename <- filename
   ini.data$DATASET$type <- "Ordinal, no sample IDs"
   ini.data$`BATCH REGRESSION`$`number of training sets` <- iterations
   ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`analysis dir` <- filename
   ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`regression dir` <- regression_folder
+
+  iniFilename <- paste0(runName, ".ini")
   ini::write.ini(ini.data, iniFilename)
   # replace "=" by " = " because SPS needs the spaces that ini package does not add.
   addSpacesToIniFile(iniFilename)
@@ -67,14 +72,14 @@ buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200){
 #' This requires the installation and valid license for that software.
 #' @param msa The msaWrapper object to work with.
 #' @param iterations The number of cross validation iterations to make.
+#' @param inifile Optional ini file to use a template with regression options.
+#' If NULL, the template ini created by createTemplateIni_BatchRegression() will be used.
 #' @return An object containing the signature.
 #' @export
 #'
-buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200){
+buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200, inifile=NULL){
 
   filename <- runName
-  templateIniFilename <- "msaWrapper_SPSignature_tte_template.ini"
-  iniFilename <- paste0(runName, ".ini")
   regression_folder <- "Reg_SETCV_MAP_L2"
 
   data <- cbind(msa$data, msa$outcome)
@@ -83,14 +88,19 @@ buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200){
   export_SPS_file(data, filename, type = 2, R = R)
 
   # make SPS ini files
-  createTemplateIni_BatchRegression(templateIniFilename)
-  ini.data <- ini::read.ini(templateIniFilename)
+  if(is.null(inifile)){
+    inifile <- "msaWrapper_SPSignature_tte_template.ini"
+    createTemplateIni_BatchRegression(inifile)
+  }
+  ini.data <- ini::read.ini(inifile)
   ini.data$SESSION$`project dir` <-  getwd()
   ini.data$DATASET$filename <- filename
   ini.data$DATASET$type <- "TTE, no sample IDs"
   ini.data$`BATCH REGRESSION`$`number of training sets` <- iterations
   ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`analysis dir` <- filename
   ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`regression dir` <- regression_folder
+
+  iniFilename <- paste0(runName, ".ini")
   ini::write.ini(ini.data, iniFilename)
   # replace "=" by " = " because SPS needs the spaces that ini package does not add.
   addSpacesToIniFile(iniFilename)
@@ -124,6 +134,11 @@ buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200){
 addSpacesToIniFile <- function(filename){
   tx  <- readLines(filename)
   tx  <- gsub("=", " = ", x = tx)
+
+  # Correct possible mistakes created
+  tx  <- gsub("width  =  ", "width = ", x = tx)
+  tx  <- gsub("default  =  ", "default = ", x = tx)
+
   writeLines(tx, con = filename)
 }
 
@@ -221,7 +236,6 @@ createTemplateIni_BatchRegression <- function(filename){
   cat("\n")
   cat("[BATCH REGRESSION]\n")
   cat("regression type = Batch Cox, 50/50 CV\n")
-  cat("regulariser = Ridge (L2)\n")
   cat("primary risk = 1\n")
   cat("number of training sets = <set this> **************\n")
   cat("cross-validation = cross-validate by error counting\n")

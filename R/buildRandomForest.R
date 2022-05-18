@@ -63,12 +63,10 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
     OOB_perf_i <- vector(length = iterations)
     valid_perf_i <- vector(length = iterations)
 
-    ProgressBar <- utils::txtProgressBar(min = 1, max = iterations,
-                                         initial = 1, style = 3)
+    ProgressBar <- utils::txtProgressBar(min = 0, max = iterations,
+                                         initial = 0, style = 3)
 
     for (i in 1:iterations){
-
-      utils::setTxtProgressBar(ProgressBar, i)
 
       if(byOOB == FALSE){
         # split data randomly for cross validation
@@ -110,6 +108,8 @@ buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, byOOB = TRUE
         perf = (sum(pred == valid_data$outcome) / length(valid_data$outcome))
         valid_perf_i[i] = perf
       }
+
+      utils::setTxtProgressBar(ProgressBar, i)
 
     }
 
@@ -231,7 +231,7 @@ buildRandomForest.msaWrapperTte <- function(msa, iterations=200, byOOB = TRUE){
   # data is a Data frame containing the y-outcome (2 cols at the end) and x-variables. No label column.
   data <- cbind(msa$data, msa$outcome)
 
-  # formula ia a symbolic description of the model to be fit. See randomForestSRC
+  # formula is a symbolic description of the model to be fit. See randomForestSRC
   formula <- as.formula(Surv(time, event) ~ .)
   names(data) <- c(names(msa$data), names(msa$outcome))
 

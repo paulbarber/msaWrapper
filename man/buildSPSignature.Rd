@@ -4,7 +4,7 @@
 \alias{buildSPSignature}
 \title{buildSPSignature}
 \usage{
-buildSPSignature(msa, runName, iterations)
+buildSPSignature(msa, runName, iterations, inifile)
 }
 \arguments{
 \item{msa}{The msaWrapper object to work with.}

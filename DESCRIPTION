@@ -17,7 +17,8 @@ Imports:
     survival,
     survminer,
     tidyr,
-    randomForestSRC
+    randomForestSRC,
+    glmnet
 Suggests:
     knitr,
     devtools,
