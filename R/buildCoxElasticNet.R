@@ -20,7 +20,7 @@ buildCoxElasticNet <- function(msa, iterations, alpha) UseMethod("buildCoxElasti
 #' @return An object containing the trained model and it's performance.
 #' @export
 #'
-buildRandomForest.msaWrapperOclass <- function(msa, iterations=200, alpha = 1){
+buildCoxElasticNet.msaWrapperOclass <- function(msa, iterations=200, alpha = 1){
   stopifnot(msa$type == "ordinal class data")
   stop("Cox Elastic Net not implemented for ordinal class data")
 }
