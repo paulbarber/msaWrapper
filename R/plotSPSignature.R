@@ -165,12 +165,12 @@ plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE
 
   # Find the optimal points
   optimum_performance <- strex::str_last_number(grep("proposed nr of covariates, test data performance:",
-                                              readLines(paste0(data.folder,
-                                                               "../SPS_Signature_logfile.txt")),
+                                              readLines(paste0(data_name,
+                                                               "_SPS_Signature_logfile.txt")),
                                               value = TRUE))
   optimum_overfitting <- strex::str_last_number(grep("proposed nr of covariates, avoiding overfitting:",
-                                              readLines(paste0(data.folder,
-                                                               "../SPS_Signature_logfile.txt")),
+                                              readLines(paste0(data_name,
+                                                               "_SPS_Signature_logfile.txt")),
                                               value = TRUE))
 
 
