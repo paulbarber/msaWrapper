@@ -31,8 +31,9 @@ msaWrapperCreate <- function(data, outcome, rowsLabelled = F,
     rowLabels <- vector()
   }
 
-  if(is.na(group)) group <- rep(1, dim(data)[2])
-  if(is.na(groupLabels)) groupLabels <- c("All")
+  if (all(is.na(group))) group <- rep(1, dim(data)[2]) ## Checking all elements are Null
+
+  if (all(is.na(groupLabels))) groupLabels <- c("All")
 
   names(group) <- names(data)
   colLabels <- names(data)
