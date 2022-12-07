@@ -299,9 +299,11 @@ calculateRiskScore <- function(riskSignatureDataframe, data){
   # multiply that col by the jth weight
   s <- data[,Covariate[j]] * weights$Weight[j]
 
-  for (j in 2:length(Covariate)){
-    # add more terms on
-    s <- s + data[,Covariate[j]] * weights$Weight[j]
+  if(length(Covariate) > 1){
+    for (j in 2:length(Covariate)){
+      # add more terms on
+      s <- s + data[,Covariate[j]] * weights$Weight[j]
+    }
   }
 
   # subtract constant
