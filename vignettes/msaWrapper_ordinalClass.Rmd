@@ -20,20 +20,20 @@ library(msaWrapper)
 
 # Load tte data
 
-Use the published patritumab trial data included in the package. This is tte data but we can use one of the variables as an ordinal class for prediction.
+Use the published patritumab trial data included in the package. This is tte data but ordinal class data has been created by splitting at the median survival time.
 
 ```{r}
-data("tte_data")
+data("oclass_data")
 ```
 
 # Assign covariate groups
 
 We can put the covariates into groups (eg from different modalities).
 
-This must align with the 'data' we pass to msaWrapperCreate. 'Drug' will be the class, do not label this column. Also tte outcome will be ignored.
+This must align with the 'data' we pass to msaWrapperCreate. 'Drug' will be the class, do not label this column. Also outcome will be ignored.
 
 ```{r}
-names(tte_data)
+names(oclass_data)
 # Start at 2 after Drug column
 groups <- c(rep(2,2), rep(3,6), 1, rep(2,3), rep(4,26), 5, 6, 6, rep(7, 3),
             rep(4,26), 6, 6, 5, rep(7, 3))
@@ -44,7 +44,7 @@ length(groups)
 # Create msaWrapper object
 
 ```{r}
-msa <- msaWrapperCreate(tte_data[,2:77], tte_data[,1],
+msa <- msaWrapperCreate(oclass_data[,2:77], oclass_data[,78],
                         group = groups, groupLabels = groupNames)
 print(msa)
 ```
