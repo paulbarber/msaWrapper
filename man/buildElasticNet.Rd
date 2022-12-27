@@ -16,5 +16,5 @@ buildElasticNet(msa, iterations = 200, alpha = 1)
 An object containing the trained model and it's performance.
 }
 \description{
-Build a Cox Elastic Net regularized model for ordinal class outcome
+Build a Binomial Elastic Net regularized model for ordinal class outcome
 }

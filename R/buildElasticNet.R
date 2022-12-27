@@ -31,6 +31,7 @@ buildElasticNet <- function(msa, iterations=200, alpha = 1){
 
 
   lambdas = NULL
+  lambdas1se= NULL
 
   ProgressBar <- utils::txtProgressBar(min = 0, max = iterations,
                                        initial = 0, style = 3)
@@ -45,31 +46,21 @@ buildElasticNet <- function(msa, iterations=200, alpha = 1){
   {
     fit <- glmnet::cv.glmnet(x, y, family = "binomial", type.measure = "auc",
                              nfolds = 3, alpha = alpha)
-    perf = data.frame(fit$lambda, fit$cvm)
-    lambdas <- rbind(lambdas, perf)
+    lambdas <- rbind(fit$lambda.min,fit$cvm[fit$index[1]])
+    lambdas1se <- rbind(fit$lambda.1se,fit$cvm[fit$index[2]])
     utils::setTxtProgressBar(ProgressBar, i)
   }
 
   close(ProgressBar)
 
-  # take mean cvm for each lambda
-  lambda_sd <- aggregate(lambdas[, 2], list(lambdas$fit.lambda), sd)
-  lambdas <- aggregate(lambdas[, 2], list(lambdas$fit.lambda), mean)
+  best_lambda = mean(lambdas[1])
+  best_perf = mean(lambdas[2])
 
-  # select the best one, for Cox family perf = c-index, choose the max value
-  best_index = which(lambdas[2] == max(lambdas[2]))
-  best_lambda = lambdas[best_index, 1]
-
-  # and the the most regularized model with perf within 1 standard deviation of the max
-  best_perf = lambdas[best_index, 2]
-  best_sd = lambda_sd[best_index, 2]
-
-  best1se_index <- max(which(lambdas[2] > (best_perf - best_sd)))
-  best1se_lambda = lambdas[best1se_index, 1]
-  best1se_perf = lambdas[best1se_index, 2]
+  best1se_lambda = mean(lambdas1se[1])
+  best1se_perf = mean(lambdas1se[2])
 
   # and now run glmnet once more
-  glmnet_fit <- glmnet::glmnet(x, y, family = "binomial", alpha = alpha)
+  glmnet_fit <- glmnet::glmnet(x, y, family = "binomial", alpha = alpha, trace.it=1)
 
   coef_matrix <- coef(fit, s = best_lambda)
   optimal_p <- coef_matrix@p[2]
@@ -84,8 +75,8 @@ buildElasticNet <- function(msa, iterations=200, alpha = 1){
   best_Predicted_risk <- predict(glmnet_fit, x, s = best_lambda)[,1]
   strict_Predicted_risk <- predict(glmnet_fit, x, s = best1se_lambda)[,1]
 
-  performance <- data.frame(lambdas[1], lambdas[2], lambda_sd[2])
-  names(performance) <- c("lambda", "c_index", "sd")
+  performance <- data.frame(lambdas[1], lambdas[2])
+  names(performance) <- c("lambda", "cvm")
 
   # return this object
   structure(list(iterations, x, y,
@@ -97,8 +88,8 @@ buildElasticNet <- function(msa, iterations=200, alpha = 1){
             .Names = c("iterations", "x", "y",
                        "performance",
                        "covar_names",
-                       "optimal_p", "optimal_covars", "optimal_coefs", "optimal_lambda", "optimal_cindex",
-                       "strict_p", "strict_covars", "strict_coefs", "strict_lambda", "strict_cindex",
+                       "optimal_p", "optimal_covars", "optimal_coefs", "optimal_lambda", "optimal_cvm",
+                       "strict_p", "strict_covars", "strict_coefs", "strict_lambda", "strict_cvm",
                        "glmnet_model", "best_Predicted_risk", "strict_Predicted_risk"),
             class = "msaWrapperElasticNet")
 
