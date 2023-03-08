@@ -21,6 +21,26 @@ buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200, inif
 
   filename <- runName
   regression_folder <- "Reg_SETCV_MAP_L2"
+  prediction_folder <- paste0('Pred', "_", runName, "_", "SETCV_MAP_L2")
+
+
+  #Check if the 'regression_folder' directory already exists; if it does, rename it with a timestamp
+  relative_regression_folder_path<- paste0(filename, "/", regression_folder)
+
+  if (file.exists(relative_regression_folder_path)){
+    #Getting the Folder created time
+    timecreated <- format((file.info(relative_regression_folder_path)$ctime),"%Y%m%d%H%M%S" )
+    file.rename(relative_regression_folder_path,paste(relative_regression_folder_path, timecreated))
+  }
+
+  #Check if the 'prediction_folder' directory already exists; if it does, rename it with a timestamp
+  relative_prediction_folder_path<- paste0(filename, "/", prediction_folder)
+
+  if (file.exists(relative_prediction_folder_path)){
+    #Getting the Folder created time
+    timecreated <- format((file.info(relative_prediction_folder_path)$ctime),"%Y%m%d%H%M%S" )
+    file.rename(relative_prediction_folder_path,paste(relative_prediction_folder_path, timecreated))
+  }
 
   data <- cbind(msa$data, msa$outcome)
   names(data) <- c(names(msa$data), names(msa$outcome))
@@ -81,6 +101,28 @@ buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200, inifile
 
   filename <- runName
   regression_folder <- "Reg_SETCV_MAP_L2"
+  prediction_folder <- paste0('Pred', "_", runName, "_", "SETCV_MAP_L2")
+
+
+  #Check if the 'regression_folder' directory already exists; if it does, rename it with a timestamp
+  relative_regression_folder_path<- paste0(filename, "/", regression_folder)
+
+  if (file.exists(relative_regression_folder_path)){
+    #Getting the Folder created time
+    timecreated <- format((file.info(relative_regression_folder_path)$ctime),"%Y%m%d%H%M%S" )
+    file.rename(relative_regression_folder_path,paste(relative_regression_folder_path, timecreated))
+  }
+
+  #Check if the 'prediction_folder' directory already exists; if it does, rename it with a timestamp
+  relative_prediction_folder_path<- paste0(filename, "/", prediction_folder)
+
+  if (file.exists(relative_prediction_folder_path)){
+    #Getting the Folder created time
+    timecreated <- format((file.info(relative_prediction_folder_path)$ctime),"%Y%m%d%H%M%S" )
+    file.rename(relative_prediction_folder_path,paste(relative_prediction_folder_path, timecreated))
+  }
+
+
 
   data <- cbind(msa$data, msa$outcome)
   names(data) <- c(names(msa$data), names(msa$outcome))
