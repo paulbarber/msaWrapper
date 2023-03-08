@@ -56,11 +56,13 @@ generateOutcomeCorrelations <- function(msa, method = c("kendall", "pearson", "s
 #' The values and method use are determined by generateOutcomeCorrelations.
 #'
 #' @param msa The msaWrapper object to work with.
+#' @param labelAlpha Significance Value level to display Signature names
+#' @param hlineAlpha Horizontal line significance Value leve
 #' @param textSize Data labels text size.
 #' @param groups To restrict covars to those in certain groups.
 #' @export
 #'
-plotOutcomeCorrelations <- function(msa, textSize = 3, groups = vector()){
+plotOutcomeCorrelations <- function(msa, labelAlpha=0.1, hlineAlpha=0.05, textSize = 3, groups = vector()){
 
   if(dim(msa$outcomeCorrelations)[1] < 1) stop()
 
@@ -70,11 +72,11 @@ plotOutcomeCorrelations <- function(msa, textSize = 3, groups = vector()){
     cor_data <- msa$outcomeCorrelations
   }
 
-  e <- ifelse(cor_data$logpval < log10(0.1), 1, 0)
+  e <- ifelse(cor_data$logpval < log10(labelAlpha), 1, 0)  #Display Signature anems if p values is lower than Significance
 
   ggplot(cor_data, aes(x = correlation, y = -logpval)) +
     geom_point() +
-    geom_hline(aes(yintercept = -log10(0.05)), colour="light grey", linetype="dashed") +
+    geom_hline(aes(yintercept = -log10(hlineAlpha)), colour="light grey", linetype="dashed") +
     geom_text(data = cor_data[e==1,], aes(label = covars), size = textSize)
 
 }
