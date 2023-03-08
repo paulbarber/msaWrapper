@@ -46,15 +46,27 @@ buildElasticNet <- function(msa, iterations=200, alpha = 1){
   {
     fit <- glmnet::cv.glmnet(x, y, family = "binomial", type.measure = "auc",
                              nfolds = 3, alpha = alpha)
-    lambdas <- rbind(fit$lambda.min,fit$cvm[fit$index[1]])
+    #lambdas <- rbind(fit$lambda.min,fit$cvm[fit$index[1]])
+    perf = data.frame(fit$lambda, fit$cvm)
+    lambdas <- rbind(lambdas, perf)
     lambdas1se <- rbind(fit$lambda.1se,fit$cvm[fit$index[2]])
     utils::setTxtProgressBar(ProgressBar, i)
   }
 
   close(ProgressBar)
 
-  best_lambda = mean(lambdas[1])
-  best_perf = mean(lambdas[2])
+  # take mean cvm for each lambda
+  lambda_sd <- aggregate(lambdas[, 2], list(lambdas$fit.lambda), sd)
+  lambdas <- aggregate(lambdas[, 2], list(lambdas$fit.lambda), mean)
+
+  #best_lambda = mean(lambdas[1])
+  #best_perf = mean(lambdas[2])
+
+  # select the best one, for Cox family perf = c-index, choose the max value
+  best_index = which(lambdas[2] == max(lambdas[2]))
+  best_lambda = lambdas[best_index, 1]
+  best_perf = lambdas[best_index, 2]
+
 
   best1se_lambda = mean(lambdas1se[1])
   best1se_perf = mean(lambdas1se[2])
@@ -72,11 +84,14 @@ buildElasticNet <- function(msa, iterations=200, alpha = 1){
   strict_scores <- coef_matrix@x
   strict_names <- coef_matrix@Dimnames[[1]][coef_matrix@i+1]
 
-  best_Predicted_risk <- predict(glmnet_fit, x, s = best_lambda)[,1]
-  strict_Predicted_risk <- predict(glmnet_fit, x, s = best1se_lambda)[,1]
+  best_Predicted_risk <- predict(glmnet_fit, x, s = best_lambda, type ="link")[,1]
+  strict_Predicted_risk <- predict(glmnet_fit, x, s = best1se_lambda, type ="link")[,1]
 
-  performance <- data.frame(lambdas[1], lambdas[2])
-  names(performance) <- c("lambda", "cvm")
+  #performance <- data.frame(lambdas[1], lambdas[2])
+  #names(performance) <- c("lambda", "cvm")
+
+  performance <- data.frame(lambdas[1], lambdas[2], lambda_sd[2])
+  names(performance) <- c("lambda", "cvm", "sd")
 
   # return this object
   structure(list(iterations, x, y,
