@@ -4,10 +4,20 @@
 \alias{plotOutcomeCorrelations}
 \title{plotOutcomeCorrelations}
 \usage{
-plotOutcomeCorrelations(msa, textSize = 3, groups = vector())
+plotOutcomeCorrelations(
+  msa,
+  labelAlpha = 0.1,
+  hlineAlpha = 0.05,
+  textSize = 3,
+  groups = vector()
+)
 }
 \arguments{
 \item{msa}{The msaWrapper object to work with.}
+
+\item{labelAlpha}{Significance Value level to display Signature names}
+
+\item{hlineAlpha}{Horizontal line significance Value leve}
 
 \item{textSize}{Data labels text size.}
 

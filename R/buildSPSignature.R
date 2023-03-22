@@ -457,3 +457,65 @@ calculateTreatmentResponseScore <- function(benefitSignatureDataframe, data){
 
   return(s)
 }
+
+#' getSignatures
+#' @param runName Test data to predict with.
+#' @param regressionFolder The regressionfolder saved in the training step.
+#' @return The Riskscore formula
+#' @export
+#'
+getSignatures <- function(runName, regressionFolder=Reg_SETCV_MAP_L2){
+
+  sigFile <- paste0(runName, "/", regressionFolder, "/RiskScore_formula.txt")
+  if(!file.exists(sigFile)) stop("No Riskscore found. Is it a valid foder?")
+
+  SigFormula <- read.table(sigFile,
+                                     sep = '*', col.names = c("Weight", "Covariate"),
+                                     stringsAsFactors = F, skip = 2, fill = T)
+
+  #print(SigFormula)
+  return (SigFormula)
+}
+
+#' getNormalisedSignatures
+#' @param runName Test data to predict with.
+#' @param regressionFolder The regressionfolder saved in the training step.
+#' @return The Riskscore formula
+#' @export
+#'
+getNormalisedSignatures <- function(runName, regressionFolder=Reg_SETCV_MAP_L2){
+
+  # Read the text file
+  NormalisedsigFile1 <- paste0(runName, "/", regressionFolder, "/betas_optimised.txt")
+  text <- readLines(NormalisedsigFile1)
+
+  # Extract beta values, ranks and Covariates
+  beta <- as.numeric(sub(".*beta\\[(\\d+)\\]=([-]?\\d+\\.?\\d*).*", "\\2", text))
+  rank <- as.numeric(sub(".*rank=(\\d+).*", "\\1", text))
+  vars<-(sub(": beta.*", "", text))
+
+
+  beta1 <- beta[1:length(beta)-1] # Remove Critical line relates NA as format is different
+  rank1 <- rank[1:length(rank)-1] # Remove Critical line relates NA as format is different
+  vars1 <- vars[1:length(vars)-1] # Remove Critical line relates NA as format is different
+
+  # Sort beta values based on rank and multiply by variable names
+  terms <- paste0(ifelse(beta1 >= 0, "+", "-"), abs(beta1), "*", vars[rank1])
+
+  # Extract critical value beta value
+  offset <- as.numeric(sub(".*\\|beta\\|=([0-9]+\\.[0-9]+).*", "\\1", text))
+  offset <-offset[length(offset)]
+
+  # Combine terms and add intercept
+  eqn <- paste0(c(terms, ""), collapse = "")
+  eqn1<-paste0(eqn,'+',offset)
+  cat("S =", eqn1, "\n")
+
+  beta[length(beta)]<-offset
+  vars[length(vars)]<-'critical line'
+  NormalisedSignature = data.frame(unlist(beta),unlist(vars))
+  names(NormalisedSignature) = c("Weight","Covariate")
+
+  return (NormalisedSignature)
+}
+

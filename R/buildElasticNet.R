@@ -109,3 +109,27 @@ buildElasticNet <- function(msa, iterations=200, alpha = 1){
             class = "msaWrapperElasticNet")
 
 }
+
+#' getElasNetSignatures
+#' @param elasnetModel The buildElasticNet.msaWrapperOclass object built from buildElasticNet
+#' @param is_optimal_signature optimal_signature =True to get optimal features, else return strict signatures
+#' @return The Riskscore formula
+#' @export
+#'
+getElasNetSignatures <- function(elasnetModel, is_optimal_signature=FALSE){
+  stopifnot(elasnetModel$type == "msaWrapperElasticNet")
+
+  if (is_optimal_signature==TRUE)
+  {
+    signatureTable <- data.frame(ElasNet_model$optimal_covars, ElasNet_model$optimal_coefs)
+
+  }
+  else{
+    signatureTable <- data.frame(ElasNet_model$strict_covars, ElasNet_model$strict_coefs)
+
+  }
+  names(signatureTable) <- c("Signature", "Coefficient")
+
+  return (signatureTable)
+}
+

@@ -3,6 +3,7 @@
 #'
 #' @import ggplot2
 #' @import stats
+#' @import glmnet
 #'
 "_PACKAGE"
 
