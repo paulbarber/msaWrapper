@@ -18,7 +18,8 @@ Imports:
     survminer,
     tidyr,
     randomForestSRC,
-    glmnet
+    glmnet,
+    plotmo
 Suggests:
     knitr,
     devtools,

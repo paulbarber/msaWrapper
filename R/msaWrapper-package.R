@@ -4,6 +4,9 @@
 #' @import ggplot2
 #' @import stats
 #' @import glmnet
+#' @import stringr
+#' @import strex
+#' @import plotmo
 #'
 "_PACKAGE"
 

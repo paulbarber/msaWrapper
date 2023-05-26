@@ -4,12 +4,18 @@
 \alias{plotSPSignatureBetaSwimmers}
 \title{plotSPSignatureBetaSwimmers}
 \usage{
-plotSPSignatureBetaSwimmers(SPSig, show_best_performance_line = TRUE)
+plotSPSignatureBetaSwimmers(
+  SPSig,
+  show_best_performance_line = TRUE,
+  selectedSig = FALSE
+)
 }
 \arguments{
 \item{SPSig}{Object returned by buildSPSignature.msaWrapperTte}
 
 \item{show_best_performance_line}{TRUE/FALSE to show or not this dotted line at the optimal number of covariates.}
+
+\item{selectedSig}{TRUE/FALSE to plot full or selected Signatures in the Plot;}
 }
 \description{
 Plot of Betas through the optimisation of SP Signature batch regression.

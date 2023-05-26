@@ -3,10 +3,21 @@
 #' Plot the coefficients as a function of Lambda/Norm/Deviance,
 #' @param cen The msaWrapperElasticNet object from buildElasticNet().
 #' @param xvar lambda/norm/dev to decide X axis
+#' @param selectedSig To decide only to label certain number of feature ; Default FALSE
+#' @param labelcnt Number of labels to indicate in the plot
 #' @export
 #'
-plotElasticNetCoefs <- function(cen, xvar="lambda"){
-  plot(cen$glmnet_model,xvar=xvar, label = T)
+plotElasticNetCoefs <- function(cen, xvar="lambda", selectedSig=FALSE, labelcnt=10){
+
+  if (selectedSig == TRUE)
+  {
+    plot_glmnet(cen$glmnet_model, xvar=xvar, label=labelcnt) # default colors
+  }
+  else
+  {
+    plot(cen$glmnet_model,xvar=xvar, label = T)
+  }
+
 }
 
 #' plotElasticNetPerformance

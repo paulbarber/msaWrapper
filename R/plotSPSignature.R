@@ -34,6 +34,11 @@ plotSPSignatureOClass <- function(SPSig){
     names(data) = c("RiskScore", "Class")
   }
 
+  # Perform t-test and calculate p-value
+  t.test_result <- t.test(data$RiskScore ~ data$Class)
+  p_value <- t.test_result$p.value
+
+
   print(cor.test(data$RiskScore, data$Class, method = "kendall"))
 
   data$Class <- as.factor(data$Class)
@@ -41,10 +46,13 @@ plotSPSignatureOClass <- function(SPSig){
   ggp <- ggplot(data, aes(x = Class, y = RiskScore, group = Class)) +
     geom_boxplot(outlier.colour = NA) +
     geom_jitter(width = 0.2, col = rgb(0.1, 0.2, 0.8, 0.3)) +
-    theme_classic()
+    theme_classic()+
+    labs(title = paste("p-value =", p_value))
 
   print(ggp)
 }
+
+
 
 #' plotSPSignatureTte
 #'
@@ -130,9 +138,10 @@ plotSPSignatureTte <- function(SPSig){
 #'
 #' @param SPSig Object returned by buildSPSignature.msaWrapperTte
 #' @param show_best_performance_line TRUE/FALSE to show or not this dotted line at the optimal number of covariates.
+#' @param selectedSig TRUE/FALSE to plot full or selected Signatures in the Plot;
 #' @export
 #'
-plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE) {
+plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE, selectedSig=FALSE) {
 
   title <- SPSig$runName
   data.name <- SPSig$runName
@@ -174,6 +183,11 @@ plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE
                                               value = TRUE))
 
 
+  if (selectedSig == TRUE)
+  {
+    Betas <- Betas[, colSums(Betas == 0.00) < 2*optimum_performance]
+  }
+
   data_long <- tidyr::gather(Betas, Covariate, Beta, 1:dim(Betas)[2], factor_key=TRUE)
   data_long$Active <- dim(Betas)[1]:1
   text.size <- 256 / dim(Betas)[2]   # by trial and error, this is a good height, if names not too long.
@@ -200,3 +214,142 @@ plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE
 
 }
 
+
+#' JNCI_pvals
+#'
+#' @param p p value
+#' @export
+#'
+JNCI_pvals <- function(p){
+  if(is.na(p)){
+    return("")
+  }
+  else if(p<0.001){
+    return("<0.001") # ***
+  }
+  else if(p==0.001){
+    return("0.001") # ***
+  }
+  else if (p<0.01){
+    return(paste0(format(round(p, 3), nsmall = 3), "")) # **
+  }
+  else if (p<0.05){
+    return(paste0(format(round(p, 2), nsmall = 2), "")) # *
+  }
+  else{
+    return(format(round(p, 2), nsmall = 2))
+  }
+}
+
+#' plotBetaTable
+#'
+#' Plot of Betas through the optimisation of SP Signature batch regression using betas_with_errors_optimised.txt
+#'
+#' Required from the parent folder of data.folder
+#'   betas_with_errors_optimised.txt
+#'
+#' @param results.folder Result folder to get required file
+#' @param cex Text font
+#' @export
+#'
+plotBetaTable <- function(results.folder, cex = 0.5 , rowspacing = 0.5, col = 1, pch = 18, xmin = -2.9, xmax = 4.2,
+                           betaTicks = c(-1.0, -0.5, 0, 0.5, 1.0),
+                           covariatepos = xmin, betapos = 2.1, pvaluepos = 3.2,
+                           rankpos = 3.6,weightpos = 4,
+                           useRank = FALSE, useWeight = FALSE){
+
+  raw.dataIn <- read.delim(paste0(results.folder, "betas_with_errors_optimised.txt"),
+                           sep = ",", header = F)
+
+  Covariate <- str_before_first(raw.dataIn$V1, ":")
+  Beta <- str_first_number_after_first(raw.dataIn$V1, "]=", decimals = T, negs = T)
+  BetaLower <- Beta - str_first_number_after_first(raw.dataIn$V1, "pm ", decimals = T, negs = T)
+  BetaUpper <- Beta + str_first_number_after_first(raw.dataIn$V1, "pm ", decimals = T, negs = T)
+  Pvalue <- str_first_number(raw.dataIn$V3, decimals = T)
+  Weight <- str_first_number(raw.dataIn$V2, decimals = T)
+  Rank <- str_last_number(raw.dataIn$V1, decimals = F)
+
+  Pvalue <- sapply(Pvalue, JNCI_pvals)
+
+  # Get critical beta value
+  critical.value <- str_last_number(grep("critical line:",
+                                         readLines(paste0(results.folder, "betas_optimised.txt")),
+                                         value = TRUE), decimals = T)
+
+  mydf <- data.frame(
+    Covariate,
+    Beta,
+    BetaLower,
+    BetaUpper,
+    Pvalue,
+    Rank,
+    Weight,
+    stringsAsFactors=FALSE
+  )
+
+  # extremes of the page
+  xmin_v <- xmin
+  xmax_v <- xmax
+
+
+  nrows = nrow(mydf)
+  rowseq <- seq(nrows*rowspacing, 0.1, length.out = nrows)
+  title_pos = (nrows + 1.2) * rowspacing
+  pos4offset = -2*rowspacing/19
+
+  # do the beta plot
+  par(mai=c(1,0,0,0))
+  plot(NULL, xlim=c(xmin_v, xmax_v), ylim=c(0, title_pos+rowspacing),
+       xlab='', ylab='', yaxt='n', xaxt='n',
+       bty='n')
+  points(mydf$Beta, rowseq, pch=pch, col=col)
+  axis(1, betaTicks, labels = as.character(betaTicks), cex.axis=cex)
+
+  # add vertical lines at beta=0 and critical values
+  segments(0, -1, 0, (nrows + 0.5) * rowspacing, lty=1)
+  segments(critical.value, -1, critical.value, (nrows + 0.5) * rowspacing, lty=3)
+  segments(-critical.value, -1, -critical.value, (nrows + 0.5) * rowspacing, lty=3)
+
+  # add confidence interval lines
+  segments(mydf$BetaLower, rowseq, mydf$BetaUpper, rowseq, col=col)
+
+  # x axis legend
+  mtext('Beta', 1, line=2.5, at=0, cex=cex, font=1)
+
+  # other cols
+
+  pos <- covariatepos
+  text(pos, title_pos+pos4offset, "Covariate", cex=cex, font=0.1, pos=4)
+  t <- ifelse(!is.na(mydf$Covariate), mydf$Covariate, '')
+  text(pos, rowseq+pos4offset, t, cex=cex, font=1, pos=4)  # set font=3 for italic
+
+
+  pos <- betapos
+  text(pos, title_pos, "Beta", cex=cex, font=1)
+  t <- ifelse(!is.na(mydf$Beta), with(mydf, paste(format(round(Beta, 2), nsmall = 2),' (',
+                                                  format(round(BetaLower, 2), nsmall = 2),'-',
+                                                  format(round(BetaUpper, 2), nsmall = 2),')',sep='')), '')
+  text(pos, rowseq, t, cex=cex)
+
+  pos <- pvaluepos
+  text(pos, title_pos, "p-value", cex=cex, font=1)
+  t <- ifelse(!is.na(mydf$Pvalue), mydf$Pvalue, '')
+  text(pos, rowseq, t, cex=cex)
+
+  if(useWeight){
+    pos <- weightpos
+    text(pos, title_pos, "Z-score", cex=cex, font=1)
+    t <- ifelse(!is.na(mydf$Weight), format(mydf$Weight, big.mark=","), '')
+    text(pos, rowseq, t, cex=cex)
+  }
+
+
+  if(useRank){
+    pos <- rankpos
+    text(pos, title_pos, "Rank", cex=cex, font=1)
+    t <- ifelse(!is.na(mydf$Rank), format(mydf$Rank, big.mark=","), '')
+    text(pos, rowseq, t, cex=cex)
+  }
+
+
+}

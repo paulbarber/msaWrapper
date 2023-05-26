@@ -37,11 +37,15 @@ getSPSignaturePerformance <- function(predictResults, Outcome){
   print(cor.test(data$RiskScore, data$Class, method = "kendall"))
 
   data$Class <- as.factor(data$Class)
+  # Perform t-test and calculate p-value
+  t.test_result <- t.test(RiskScore ~ Class, data =data)
+  p_value <- t.test_result$p.value
 
   ggp <- ggplot(data, aes(x = Class, y = RiskScore, group = Class)) +
     geom_boxplot(outlier.colour = NA) +
     geom_jitter(width = 0.2, col = rgb(0.1, 0.2, 0.8, 0.3)) +
-    theme_classic()
+    theme_classic()+
+    labs(title = paste("p-value =", p_value))
 
   print(ggp)
 
@@ -53,6 +57,6 @@ getSPSignaturePerformance <- function(predictResults, Outcome){
       plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE,
       grid=TRUE,
       print.auc=TRUE, print.thres=TRUE)
-  return (ci.auc(data$Class, data$RiskScore))
+  return (auc(data$Class, data$RiskScore))
 
 }

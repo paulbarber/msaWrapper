@@ -50,6 +50,6 @@ getElasticNetPerformance <- function(predictResults, Outcome){
       plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE,
       grid=TRUE,
       print.auc=TRUE, print.thres=TRUE)
-  return (ci.auc(data$Class, data$RiskScore))
+  return (auc(data$Class, data$RiskScore))
 
 }
