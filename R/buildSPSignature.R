@@ -464,10 +464,10 @@ calculateTreatmentResponseScore <- function(benefitSignatureDataframe, data){
 #' @return The Riskscore formula
 #' @export
 #'
-getSignatures <- function(runName, regressionFolder=Reg_SETCV_MAP_L2){
+getSignatures <- function(runName, regressionFolder="Reg_SETCV_MAP_L2"){
 
   sigFile <- paste0(runName, "/", regressionFolder, "/RiskScore_formula.txt")
-  if(!file.exists(sigFile)) stop("No Riskscore found. Is it a valid foder?")
+  if(!file.exists(sigFile)) stop("No Riskscore found. Is it a valid folder?")
 
   SigFormula <- read.table(sigFile,
                                      sep = '*', col.names = c("Weight", "Covariate"),
@@ -483,10 +483,12 @@ getSignatures <- function(runName, regressionFolder=Reg_SETCV_MAP_L2){
 #' @return The Riskscore formula
 #' @export
 #'
-getNormalisedSignatures <- function(runName, regressionFolder=Reg_SETCV_MAP_L2){
+getNormalisedSignatures <- function(runName, regressionFolder="Reg_SETCV_MAP_L2"){
 
   # Read the text file
   NormalisedsigFile1 <- paste0(runName, "/", regressionFolder, "/betas_optimised.txt")
+  if(!file.exists(NormalisedsigFile1)) stop("No betas_optimised found. Is it a valid folder?")
+
   text <- readLines(NormalisedsigFile1)
 
   # Extract beta values, ranks and Covariates

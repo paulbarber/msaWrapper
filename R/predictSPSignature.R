@@ -5,12 +5,12 @@
 #' @return Predicted Results
 #' @export
 #'
-predictSPSignature <- function(testData, runName, regressionFolder=Reg_SETCV_MAP_L2){
+predictSPSignature <- function(testData, runName, regressionFolder="Reg_SETCV_MAP_L2"){
 
   # extract basic results
 
   sigFile <- paste0(runName, "/", regressionFolder, "/RiskScore_formula.txt")
-  if(!file.exists(sigFile)) stop("No Riskscore found. Is it a valid foder?")
+  if(!file.exists(sigFile)) stop("No Riskscore found. Is it a valid folder?")
 
   riskSignatureDataframe <- read.table(sigFile,
                                        sep = '*', col.names = c("Weight", "Covariate"),
