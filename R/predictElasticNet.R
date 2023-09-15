@@ -34,11 +34,15 @@ getElasticNetPerformance <- function(predictResults, Outcome){
   print(cor.test(data$RiskScore, data$Class, method = "kendall"))
 
   data$Class <- as.factor(data$Class)
+  # Perform t-test and calculate p-value
+  t.test_result <- t.test(RiskScore ~ Class, data =data)
+  p_value <-sapply(t.test_result$p.value, JNCI_pvals)
 
   ggp <- ggplot(data, aes(x = Class, y = RiskScore, group = Class)) +
     geom_boxplot(outlier.colour = NA) +
     geom_jitter(width = 0.2, col = rgb(0.1, 0.2, 0.8, 0.3)) +
-    theme_classic()
+    theme_classic()+
+    labs(title = paste("p-value", p_value))
 
   print(ggp)
 
@@ -50,6 +54,19 @@ getElasticNetPerformance <- function(predictResults, Outcome){
       plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE,
       grid=TRUE,
       print.auc=TRUE, print.thres=TRUE)
+
+  old_par = par()
+  par(pty = "s")
+  roc(data$Class, data$RiskScore,
+      smoothed = TRUE, quiet = TRUE,
+      # arguments for ci
+      ci=TRUE, ci.alpha=0.95, stratified=FALSE,
+      # arguments for plot
+      plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE,
+      grid=TRUE,
+      print.auc=FALSE, print.thres=FALSE, asp = NA)
+  par(old_par)
+
   return (auc(data$Class, data$RiskScore))
 
 }

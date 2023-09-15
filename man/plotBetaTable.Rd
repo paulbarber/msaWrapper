@@ -11,17 +11,15 @@ plotBetaTable(
   col = 1,
   pch = 18,
   xmin = -2.9,
-  xmax = 3.6,
+  xmax = 4.2,
   betaTicks = c(-1, -0.5, 0, 0.5, 1),
   covariatepos = xmin,
-  classpos = -0.8,
   betapos = 2.1,
   pvaluepos = 3.2,
+  rankpos = 3.6,
   weightpos = 4,
-  rankpos = 4.7,
-  useClass = FALSE,
-  useWeight = FALSE,
-  useRank = FALSE
+  useRank = FALSE,
+  useWeight = FALSE
 )
 }
 \arguments{

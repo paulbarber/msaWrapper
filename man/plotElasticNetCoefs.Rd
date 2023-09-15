@@ -5,12 +5,16 @@
 \title{plotElasticNetCoefs
 Plot the coefficients as a function of Lambda/Norm/Deviance,}
 \usage{
-plotElasticNetCoefs(cen, xvar = "lambda")
+plotElasticNetCoefs(cen, xvar = "lambda", selectedSig = FALSE, labelcnt = 10)
 }
 \arguments{
 \item{cen}{The msaWrapperElasticNet object from buildElasticNet().}
 
 \item{xvar}{lambda/norm/dev to decide X axis}
+
+\item{selectedSig}{To decide only to label certain number of feature ; Default FALSE}
+
+\item{labelcnt}{Number of labels to indicate in the plot}
 }
 \description{
 plotElasticNetCoefs

@@ -36,7 +36,7 @@ plotSPSignatureOClass <- function(SPSig){
 
   # Perform t-test and calculate p-value
   t.test_result <- t.test(data$RiskScore ~ data$Class)
-  p_value <- t.test_result$p.value
+  p_value <-sapply(t.test_result$p.value, JNCI_pvals)
 
 
   print(cor.test(data$RiskScore, data$Class, method = "kendall"))
@@ -47,7 +47,7 @@ plotSPSignatureOClass <- function(SPSig){
     geom_boxplot(outlier.colour = NA) +
     geom_jitter(width = 0.2, col = rgb(0.1, 0.2, 0.8, 0.3)) +
     theme_classic()+
-    labs(title = paste("p-value =", p_value))
+    labs(title = paste("p-value", p_value))
 
   print(ggp)
 }
@@ -139,9 +139,10 @@ plotSPSignatureTte <- function(SPSig){
 #' @param SPSig Object returned by buildSPSignature.msaWrapperTte
 #' @param show_best_performance_line TRUE/FALSE to show or not this dotted line at the optimal number of covariates.
 #' @param selectedSig TRUE/FALSE to plot full or selected Signatures in the Plot;
+#' @param textreducescale To reduce the Text size, pass value >1; Useful for lower number of covariates
 #' @export
 #'
-plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE, selectedSig=FALSE) {
+plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE, selectedSig=FALSE, textreducescale=1) {
 
   title <- SPSig$runName
   data.name <- SPSig$runName
@@ -190,7 +191,7 @@ plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE
 
   data_long <- tidyr::gather(Betas, Covariate, Beta, 1:dim(Betas)[2], factor_key=TRUE)
   data_long$Active <- dim(Betas)[1]:1
-  text.size <- 256 / dim(Betas)[2]   # by trial and error, this is a good height, if names not too long.
+  text.size <- 256 / ((dim(Betas)[2])*textreducescale)   # by trial and error, this is a good height, if names not too long.
   largest.Beta <- max(2*critical.value, max(abs(data_long$Beta)))
   data_long$Beta <- ifelse(data_long$Beta == 0.0, NA, data_long$Beta)  # make zero values NA so they become transparent in the heatmap
 
@@ -214,32 +215,6 @@ plotSPSignatureBetaSwimmers <- function(SPSig, show_best_performance_line = TRUE
 
 }
 
-
-#' JNCI_pvals
-#'
-#' @param p p value
-#' @export
-#'
-JNCI_pvals <- function(p){
-  if(is.na(p)){
-    return("")
-  }
-  else if(p<0.001){
-    return("<0.001") # ***
-  }
-  else if(p==0.001){
-    return("0.001") # ***
-  }
-  else if (p<0.01){
-    return(paste0(format(round(p, 3), nsmall = 3), "")) # **
-  }
-  else if (p<0.05){
-    return(paste0(format(round(p, 2), nsmall = 2), "")) # *
-  }
-  else{
-    return(format(round(p, 2), nsmall = 2))
-  }
-}
 
 #' plotBetaTable
 #'

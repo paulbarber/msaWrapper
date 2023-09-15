@@ -93,3 +93,29 @@ print.msaWrapperOclass <- function(msa, ...){
   print(t)
 }
 
+#' JNCI_pvals
+#'
+#' @param p p value
+#' @export
+#'
+JNCI_pvals <- function(p){
+  if(is.na(p)){
+    return("")
+  }
+  else if(p<0.001){
+    return("<0.001") # ***
+  }
+  else if(p==0.001){
+    return("0.001") # ***
+  }
+  else if (p<0.01){
+    return(paste0(format(round(p, 3), nsmall = 3), "")) # **
+  }
+  else if (p<0.05){
+    return(paste0(format(round(p, 2), nsmall = 2), "")) # *
+  }
+  else{
+    return(format(round(p, 2), nsmall = 2))
+  }
+}
+

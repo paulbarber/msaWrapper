@@ -7,7 +7,8 @@
 plotSPSignatureBetaSwimmers(
   SPSig,
   show_best_performance_line = TRUE,
-  selectedSig = FALSE
+  selectedSig = FALSE,
+  textreducescale = 1
 )
 }
 \arguments{
@@ -16,6 +17,8 @@ plotSPSignatureBetaSwimmers(
 \item{show_best_performance_line}{TRUE/FALSE to show or not this dotted line at the optimal number of covariates.}
 
 \item{selectedSig}{TRUE/FALSE to plot full or selected Signatures in the Plot;}
+
+\item{textreducescale}{To reduce the Text size, pass value >1; Useful for lower number of covariates}
 }
 \description{
 Plot of Betas through the optimisation of SP Signature batch regression.
