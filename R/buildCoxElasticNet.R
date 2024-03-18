@@ -30,7 +30,7 @@ buildCoxElasticNet.msaWrapperOclass <- function(msa, iterations=200, alpha = 1){
 
 #' buildCoxElasticNet.msaWrapperTte
 #'
-#' Build a Cox Elastic Net regularized model for ordinal class outcome.
+#' Build a Cox Elastic Net regularized model for time to event outcome.
 #' Uses glmnet::cv.glmnet() for optimisation.
 #' Uses 3-fold cross validation (the minimum glmnet allows).
 #' Data are normalised to zero mean and unit sd.
