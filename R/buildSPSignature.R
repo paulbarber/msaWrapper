@@ -66,7 +66,7 @@ buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200, inif
   addSpacesToIniFile(iniFilename)
 
   # run SPS
-  system(paste("SaddlePoint-Signature.exe", iniFilename))
+  system(paste("spsSIGNATURE.exe", iniFilename))
 
   # extract basic results
   info.file <- paste0(filename, "/", regression_folder, "/RiskScoreEngine/PredictionSettings.txt")
@@ -148,7 +148,7 @@ buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200, inifile
   addSpacesToIniFile(iniFilename)
 
   # run SPS
-  system(paste("SaddlePoint-Signature.exe", iniFilename))
+  system(paste("spsSIGNATURE.exe", iniFilename))
 
   # extract basic results
   info.file <- paste0(filename, "/", regression_folder, "/RiskScoreEngine/PredictionSettings.txt")
