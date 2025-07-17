@@ -264,7 +264,7 @@ createTemplateIni_BatchRegression <- function(filename){
   cat("optimal covariate set = balanced criterion involving overfitting gap\n")
   cat("parametric model for regression = covariate noise only\n")
   cat("risk scores non-spurious cov associations only = on\n")
-  cat("image format = PNG\n")
+  cat("image format = EPS\n")
   cat("fixed random number seed = no\n")
   cat("\n")
   cat("[SESSION]\n")
