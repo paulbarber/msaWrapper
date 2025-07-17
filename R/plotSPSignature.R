@@ -28,7 +28,9 @@ plotSPSignatureOClass <- function(SPSig){
                      header = F,
                      nrows = N)
 
-  if(ncol(data) == 3){
+  if(ncol(data) == 4){
+    names(data) = c("ID", "RiskScore", "Unknown", "Class")
+  }  else if(ncol(data) == 3){
     names(data) = c("ID", "RiskScore", "Class")
   }  else {
     names(data) = c("RiskScore", "Class")
