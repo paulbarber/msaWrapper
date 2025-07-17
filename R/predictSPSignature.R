@@ -7,19 +7,35 @@
 #'
 predictSPSignature <- function(testData, runName, regressionFolder="Reg_SETCV_MAP_L2"){
 
-  # extract basic results
-
+ # extract basic results
+  
   sigFile <- paste0(runName, "/", regressionFolder, "/RiskScore_formula.txt")
   if(!file.exists(sigFile)) stop("No Riskscore found. Is it a valid folder?")
-
-  riskSignatureDataframe <- read.table(sigFile,
+  
+  lines <- readLines(sigFile)
+  
+  # The Risk signature file now (July 2025) contains 2 signatures
+  # Find the line number containing the target string for the non-spurious version
+  start_line <- grep("non-spurious covariates only", lines)[1]  # [1] ensures the first match
+  
+  relevant_lines <- lines[start_line:length(lines)]
+  
+  # Write the relevant lines to a temporary file
+  temp_file <- tempfile()
+  writeLines(relevant_lines, temp_file)
+  
+  # Read the table from the temporary file
+  riskSignatureDataframe <- read.table(temp_file,
                                        sep = '*', col.names = c("Weight", "Covariate"),
-                                       stringsAsFactors = F, skip = 2, fill = T)
-
+                                       stringsAsFactors = F, skip = 1, fill = T)
+  
+  # Clean up the temporary file
+  unlink(temp_file)
+  
   print(riskSignatureDataframe)
   testresults <-calculateRiskScore(riskSignatureDataframe, testData)
   return (testresults)
-
+  
 }
 
 
