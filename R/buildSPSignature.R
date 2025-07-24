@@ -20,9 +20,32 @@ buildSPSignature <- function(msa, runName, iterations, inifile) UseMethod("build
 buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200, inifile=NULL){
 
   filename <- runName
-  regression_folder <- "Reg_SETCV_MAP_L2"
-  prediction_folder <- paste0('Pred', "_", runName, "_", "SETCV_MAP_L2")
 
+  # make sps data
+  data <- cbind(msa$data, msa$outcome)
+  names(data) <- c(names(msa$data), names(msa$outcome))
+  C <- nlevels(as.factor(msa$outcome))  # number of levels in the class outcome
+  export_SPS_file(data, filename, type = 4, C = C)
+
+  # make SPS ini files
+  if(is.null(inifile)){
+    inifile <- "msaWrapper_SPSignature_tte_template.ini"
+    createTemplateIni_BatchRegression(inifile)
+  }
+  ini.data <- ini::read.ini(inifile)
+  ini.data$SESSION$`project dir` <-  getwd()
+  ini.data$DATASET$filename <- filename
+  ini.data$DATASET$type <- "Ordinal, no sample IDs"
+  ini.data$`BATCH REGRESSION`$`number of training sets` <- iterations
+  ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`analysis dir` <- filename
+  
+  iniFilename <- paste0(runName, ".ini")
+  ini::write.ini(ini.data, iniFilename)
+  # replace "=" by " = " because SPS needs the spaces that ini package does not add.
+  addSpacesToIniFile(iniFilename)
+
+  regression_folder <- ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`regression dir`
+  prediction_folder <- paste0('Pred', "_", runName, "_", sub("Reg_", "", regression_folder))
 
   #Check if the 'regression_folder' directory already exists; if it does, rename it with a timestamp
   relative_regression_folder_path<- paste0(filename, "/", regression_folder)
@@ -42,31 +65,11 @@ buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200, inif
     file.rename(relative_prediction_folder_path,paste(relative_prediction_folder_path, timecreated))
   }
 
-  data <- cbind(msa$data, msa$outcome)
-  names(data) <- c(names(msa$data), names(msa$outcome))
-  C <- nlevels(as.factor(msa$outcome))  # number of levels in the class outcome
-  export_SPS_file(data, filename, type = 4, C = C)
-
-  # make SPS ini files
-  if(is.null(inifile)){
-    inifile <- "msaWrapper_SPSignature_tte_template.ini"
-    createTemplateIni_BatchRegression(inifile)
-  }
-  ini.data <- ini::read.ini(inifile)
-  ini.data$SESSION$`project dir` <-  getwd()
-  ini.data$DATASET$filename <- filename
-  ini.data$DATASET$type <- "Ordinal, no sample IDs"
-  ini.data$`BATCH REGRESSION`$`number of training sets` <- iterations
-  ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`analysis dir` <- filename
-  ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`regression dir` <- regression_folder
-
-  iniFilename <- paste0(runName, ".ini")
-  ini::write.ini(ini.data, iniFilename)
-  # replace "=" by " = " because SPS needs the spaces that ini package does not add.
-  addSpacesToIniFile(iniFilename)
-
+  
   # run SPS
   system(paste("spsSIGNATURE.exe", iniFilename))
+
+  
 
   # extract basic results
   info.file <- paste0(filename, "/", regression_folder, "/RiskScoreEngine/PredictionSettings.txt")
@@ -100,9 +103,32 @@ buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200, inif
 buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200, inifile=NULL){
 
   filename <- runName
-  regression_folder <- "Reg_SETCV_MAP_L2"
-  prediction_folder <- paste0('Pred', "_", runName, "_", "SETCV_MAP_L2")
 
+  # make SPS data
+  data <- cbind(msa$data, msa$outcome)
+  names(data) <- c(names(msa$data), names(msa$outcome))
+  R <- nlevels(as.factor(msa$outcome$event)) # Number of event types
+  export_SPS_file(data, filename, type = 2, R = R)
+
+  # make SPS ini files
+  if(is.null(inifile)){
+    inifile <- "msaWrapper_SPSignature_tte_template.ini"
+    createTemplateIni_BatchRegression(inifile)
+  }
+  ini.data <- ini::read.ini(inifile)
+  ini.data$SESSION$`project dir` <-  getwd()
+  ini.data$DATASET$filename <- filename
+  ini.data$DATASET$type <- "TTE, no sample IDs"
+  ini.data$`BATCH REGRESSION`$`number of training sets` <- iterations
+  ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`analysis dir` <- filename
+
+  iniFilename <- paste0(runName, ".ini")
+  ini::write.ini(ini.data, iniFilename)
+  # replace "=" by " = " because SPS needs the spaces that ini package does not add.
+  addSpacesToIniFile(iniFilename)
+
+  regression_folder <- ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`regression dir`
+  prediction_folder <- paste0('Pred', "_", runName, "_", sub("Reg_", "", regression_folder))
 
   #Check if the 'regression_folder' directory already exists; if it does, rename it with a timestamp
   relative_regression_folder_path<- paste0(filename, "/", regression_folder)
@@ -121,31 +147,6 @@ buildSPSignature.msaWrapperTte <- function(msa, runName, iterations=200, inifile
     timecreated <- format((file.info(relative_prediction_folder_path)$ctime),"%Y%m%d%H%M%S" )
     file.rename(relative_prediction_folder_path,paste(relative_prediction_folder_path, timecreated))
   }
-
-
-
-  data <- cbind(msa$data, msa$outcome)
-  names(data) <- c(names(msa$data), names(msa$outcome))
-  R <- nlevels(as.factor(msa$outcome$event)) # Number of event types
-  export_SPS_file(data, filename, type = 2, R = R)
-
-  # make SPS ini files
-  if(is.null(inifile)){
-    inifile <- "msaWrapper_SPSignature_tte_template.ini"
-    createTemplateIni_BatchRegression(inifile)
-  }
-  ini.data <- ini::read.ini(inifile)
-  ini.data$SESSION$`project dir` <-  getwd()
-  ini.data$DATASET$filename <- filename
-  ini.data$DATASET$type <- "TTE, no sample IDs"
-  ini.data$`BATCH REGRESSION`$`number of training sets` <- iterations
-  ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`analysis dir` <- filename
-  ini.data$`OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION`$`regression dir` <- regression_folder
-
-  iniFilename <- paste0(runName, ".ini")
-  ini::write.ini(ini.data, iniFilename)
-  # replace "=" by " = " because SPS needs the spaces that ini package does not add.
-  addSpacesToIniFile(iniFilename)
 
   # run SPS
   system(paste("spsSIGNATURE.exe", iniFilename))
@@ -292,7 +293,7 @@ createTemplateIni_BatchRegression <- function(filename){
   cat("\n")
   cat("[OUTCOME PREDICTION: MULTI-RISK SCORE APPLICATION]\n")
   cat("analysis dir = <set this> **************\n")
-  cat("regression dir = <set this> **************\n")
+  cat("regression dir = Reg_SETCV_MAP_L2\n")
   cat("primary risk = 1\n")
   cat("cutoff time auto = Yes\n")
   cat("compute_roc_and_auc = Yes\n")
