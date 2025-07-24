@@ -29,7 +29,7 @@ buildSPSignature.msaWrapperOclass <- function(msa, runName, iterations=200, inif
 
   # make SPS ini files
   if(is.null(inifile)){
-    inifile <- "msaWrapper_SPSignature_tte_template.ini"
+    inifile <- "msaWrapper_SPSignature_oclass_template.ini"
     createTemplateIni_BatchRegression(inifile)
   }
   ini.data <- ini::read.ini(inifile)
