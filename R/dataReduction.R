@@ -31,7 +31,7 @@ reduceByCorrelationWithinGroups <- function(msa,
     var_name <- outcome_cor$covars[i]
     g = group[var_name == names(msa$data)]
 
-    cat(paste("Check:", i, var_name, group_names[g], "\n"))
+    cat(paste("Check:", i, var_name, "(group:", group_names[g], ") out_cor=", signif(outcome_cor$correlation[i], 3), "\n"))
 
     # skip those already in discard list
     if(var_name %in% discard){
@@ -52,16 +52,17 @@ reduceByCorrelationWithinGroups <- function(msa,
     vstrong_vals <- vstrong_vals[!(vstrong_cors == var_name)]
     vstrong_cors <- vstrong_cors[!(vstrong_cors == var_name)]
     vstrong_vals <- vstrong_vals[!is.na(vstrong_vals)]
-    vstrong_cors <- vstrong_cors[!is.na(vstrong_cors)]
+    vstrong_cors <- vstrong_cors[!is.na(vstrong_vals)]
 
     # retain those in same group
-    vstrong_cors <- vstrong_cors[group[vstrong_cors]==g]
+    vstrong_vals <- vstrong_vals[group[vstrong_cors] == g]
+    vstrong_cors <- vstrong_cors[group[vstrong_cors] == g]
 
     # add others to discard list
     discard <- c(discard, vstrong_cors)
 
     if(length(vstrong_cors>0))
-      cat(paste(" Discarding", vstrong_cors, signif(vstrong_vals, 3), "\n"))
+      cat(paste(" Discarding", vstrong_cors, "cov_cor=", signif(vstrong_vals, 3), "\n"))
   }
 
   # reduce the data
